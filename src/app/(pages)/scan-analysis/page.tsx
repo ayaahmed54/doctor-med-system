@@ -48,7 +48,7 @@ export default function ScanAnalysis() {
                             </p>
 
                             <button className="w-full h-12 mt-5.5 bg-[#064EE0] hover:bg-[#0542c2] transition-colors shadow-[0px_1px_2px_rgba(0,0,0,0.05)] rounded-[24px] flex items-center justify-center gap-2 group">
-                                <Link href={'/uploadscan'} className='flex items-center'>
+                                <Link href={'/uploadscan?type=brain'} className='flex items-center'>
                                     <span className="font-inter font-semibold text-[14px] pr-3 text-white">
                                         Continue
                                     </span>
@@ -70,7 +70,7 @@ export default function ScanAnalysis() {
                             </p>
 
                             <button className="w-full h-12 bg-[#064EE0] hover:bg-[#0542c2] transition-colors shadow-[0px_1px_2px_rgba(0,0,0,0.05)] rounded-[24px] flex items-center justify-center gap-2 group">
-                                <Link href={'/uploadscan'} className='flex items-center'>
+                                <Link href={'/uploadscan?type=skin'} className='flex items-center'>
                                     <span className="font-inter font-semibold text-[14px] pr-3 text-white">
                                         Continue
                                     </span>
@@ -91,7 +91,7 @@ export default function ScanAnalysis() {
                             </p>
 
                             <button className="w-full h-12 bg-[#064EE0] hover:bg-[#0542c2] transition-colors shadow-[0px_1px_2px_rgba(0,0,0,0.05)] rounded-[24px] flex items-center justify-center gap-2 group">
-                                <Link href={'/uploadscan'} className='flex items-center'>
+                                <Link href={'/uploadscan?type=breast'} className='flex items-center'>
                                     <span className="font-inter font-semibold text-[14px] pr-3 text-white">
                                         Continue
                                     </span>
@@ -112,7 +112,7 @@ export default function ScanAnalysis() {
                             </p>
 
                             <button className="w-full h-12 bg-[#064EE0] hover:bg-[#0542c2] transition-colors shadow-[0px_1px_2px_rgba(0,0,0,0.05)] rounded-[24px] flex items-center justify-center gap-2 group">
-                                <Link href={'/uploadscan'} className='flex items-center'>
+                                <Link href={'/uploadscan?type=eye'} className='flex items-center'>
                                     <span className="font-inter font-semibold text-[14px] pr-3 text-white">
                                         Continue
                                     </span>
@@ -133,7 +133,7 @@ export default function ScanAnalysis() {
                             </p>
 
                             <button className="w-full h-12 bg-[#064EE0] hover:bg-[#0542c2] transition-colors shadow-[0px_1px_2px_rgba(0,0,0,0.05)] rounded-[24px] flex items-center justify-center gap-2 group">
-                                <Link href={'/uploadscan'} className='flex items-center'>
+                                <Link href={'/uploadscan?type=lung'} className='flex items-center'>
                                     <span className="font-inter font-semibold text-[14px] pr-3 text-white">
                                         Continue
                                     </span>
@@ -153,7 +153,7 @@ export default function ScanAnalysis() {
                                 Cardiac CT Imaging. Advanced visualization for coronary arteries, heart structure evaluation, and cardiovascular disease detection
                             </p>
                             <button className="w-full h-12 bg-[#064EE0] hover:bg-[#0542c2] transition-colors shadow-[0px_1px_2px_rgba(0,0,0,0.05)] rounded-[24px] flex items-center justify-center gap-2 group">
-                                <Link href={'/uploadscan'} className='flex items-center'>
+                                <Link href={'/uploadscan?type=heart'} className='flex items-center'>
                                     <span className="font-inter font-semibold text-[14px] pr-3 text-white">
                                         Continue
                                     </span>
@@ -176,7 +176,7 @@ export default function ScanAnalysis() {
                                 </p>
 
                                 <button className="w-full h-12 bg-[#064EE0] hover:bg-[#0542c2] transition-colors shadow-[0px_1px_2px_rgba(0,0,0,0.05)] rounded-[24px] flex items-center justify-center gap-2 group">
-                                    <Link href={'/uploadscan'} className='flex items-center'>
+                                    <Link href={'/uploadscan?type=kidney'} className='flex items-center'>
                                         <span className="font-inter font-semibold text-[14px] pr-3 text-white">
                                             Continue
                                         </span>

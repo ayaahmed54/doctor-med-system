@@ -1,168 +1,331 @@
-import React from "react";
-import {
-    Calendar,
-    ChevronRight,
-    Brain,
-    Activity,
-    LucideIcon,
-    CalendarDaysIcon
-} from "lucide-react";
+"use client"
+import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { Plus, List, LayoutGrid, Filter, MoreVertical, Activity, Clock, User, CheckCircle, XCircle, Calendar, ChevronRight, CalendarDaysIcon, ImageIcon, FileText } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+interface Doctor {
+    id: string;
+    name: string;
+    specialty: string;
+    price: number;
+}
+
+interface Patient {
+    id: string;
+    name: string;
+}
+
 interface Appointment {
-    time: string;
-    patient: string;
-    type: string;
-    status: "Confirmed" | "Checked In" | "Waiting" | "Pending";
+    id: string;
+    startTime: string;
+    endTime: string;
+    status: "pending" | "confirmed" | "checked_in" | "completed" | "cancelled";
+    doctor: Doctor;
+    patient: Patient;
 }
 
-interface ScanItem {
-    title: string;
-    patient: string;
-    icon: LucideIcon;
-    color: string;
-    bg: string;
+function formatTime(iso: string) {
+    return new Date(iso).toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+    });
 }
 
-const appointments: Appointment[] = [
-    { time: "09:00 AM", patient: "Rana Ahmed", type: "General Check-up", status: "Confirmed" },
-    { time: "10:00 AM", patient: "Mohmed yasser", type: "Follow-up", status: "Checked In" },
-    { time: "11:30 AM", patient: "ALi Refaat", type: "Consultation", status: "Waiting" },
-    { time: "01:00 PM", patient: "Alaa Mohamed", status: "Confirmed", type: "Scan Review" },
-    { time: "02:30 PM", patient: "Amr El-Qadi", type: "Emergency", status: "Pending" },
+function getDuration(start: string, end: string) {
+    const diff = (new Date(end).getTime() - new Date(start).getTime()) / 60000;
+    return `${diff} min`;
+}
+const pendingScans = [
+    {
+        title: "Chest X-Ray",
+        patient: "John Doe",
+        icon: ImageIcon,
+        bg: "bg-blue-50",
+        color: "text-blue-600"
+    },
+
+    {
+        title: "MRI Brain",
+        patient: "Mike Ross",
+        icon: FileText,
+        bg: "bg-purple-50",
+        color: "text-purple-600"
+    }
 ];
 
-const pendingScans: ScanItem[] = [
-    { title: "MRI - Brain", patient: "Rana Ahmed", icon: Brain, color: "text-[#2563EB]", bg: "bg-[#DBEAFE]" },
-    { title: "X-Ray - Chest", patient: "Mohmed yasser", icon: Activity, color: "text-[#4F46E5]", bg: "bg-[#E0E7FF]" },
 
 
-];
-
-const statusStyles = {
-    "Confirmed": "bg-[#DCFCE7] text-[#15803D]",
-    "Checked In": "bg-[#E0F2FE] text-[#0369A1]",
-    "Waiting": "bg-[#FEF9C3] text-[#854D0E]",
-    "Pending": "bg-[#FEE2E2] text-[#B91C1C]",
+const statusStyles: Record<Appointment["status"], string> = {
+    "pending": "bg-[#DBEAFE] text-[#3B82F6] border-[#EFF6FF]",
+    "confirmed": "bg-[#F0FDF4] text-[#16A34A] border-[#DCFCE7]",
+    "checked_in": "bg-[#FFEDD5] text-[#F97316] border-[#FFF7ED]",
+    "completed": "bg-[#E2E8F0] text-[#94A3B8] border-[#F1F5F9]",
+    "cancelled": "bg-[#FFF1F2] text-[#E11D48] border-[#FFE4E6]",
 };
 
-const getInitials = (name: string) => {
-    return name.split(" ").map(n => n[0]).join("").toUpperCase();
-};
+export default function MedicalAppointmentsTable() {
+    const { data: session } = useSession();
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
+    const [loading, setLoading] = useState(true);
+    useEffect(() => {
+        async function getAppointments() {
+            const userToken = session?.token;
+            if (!userToken) return;
 
-export default function MedicalDashboard() {
-    return (
-        <div className="flex flex-col lg:flex-row gap-8 p-8 bg-[#F8F9FC] min-h-screen">
+            try {
+                setLoading(true);
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_URL_API}/appointments/my-appointments`,
+                    {
+                        method: "GET",
+                        headers: {
+                            Authorization: `Bearer ${userToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                const result = await response.json();
+                setAppointments(result.data.appointments);
+            } catch (error) {
+                console.error("Failed to fetch appointments:", error);
+            }
+            finally {
+                // الحل هنا: إيقاف اللودنج سواء نجح الطلب أو فشل
+                setLoading(false);
+            }
+        }
 
-            <div className="flex-1 flex flex-col gap-6">
-                <div className="flex justify-between items-center w-full">
-                    <h3 className="text-xl font-bold text-[#0D121B]">Today's Appointments</h3>
-                    <Link href="/appointments" className="text-sm font-semibold text-[#2B6CEE]">
-                        <button className="text-sm font-semibold text-[#2B6CEE] hover:underline">View All</button>
-                    </Link>
-                </div>
+        getAppointments();
+    }, [session]);
 
-                <div className="bg-white border border-[#E7EBF3] shadow-sm rounded-2xl overflow-hidden">
-                    <Table>
-                        <TableHeader className="bg-[#F8F9FC]">
-                            <TableRow>
-                                <TableHead className="px-6 py-4 text-[12px] uppercase text-[#4C669A]">Time</TableHead>
-                                <TableHead className="px-6 py-4 text-[12px] uppercase text-[#4C669A]">Patient</TableHead>
-                                <TableHead className="px-6 py-4 text-[12px] uppercase text-[#4C669A]">Type</TableHead>
-                                <TableHead className="px-6 py-4 text-[12px] uppercase text-[#4C669A]">Status</TableHead>
-                                <TableHead className="px-6 py-4 text-right text-[12px] uppercase text-[#4C669A]">Action</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {appointments.map((apt, i) => (
-                                <TableRow key={i} className="hover:bg-gray-50/50 border-b-[#E7EBF3] last:border-none h-16">
-                                    <TableCell className="px-6 font-medium text-[#0D121B]">{apt.time}</TableCell>
-                                    <TableCell className="px-6">
-                                        <div className="flex items-center gap-3">
-                                            <Avatar className="h-9 w-9 border">
-                                                <AvatarFallback className="bg-[#F0F4FF] text-[#2B6CEE] text-xs font-bold">
-                                                    {getInitials(apt.patient)}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <span className="font-semibold text-[#0D121B]">{apt.patient}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="px-6 text-[#4C669A]">{apt.type}</TableCell>
-                                    <TableCell className="px-6">
-                                        <span className={`px-3 py-1 rounded-full text-[11px] font-bold ${statusStyles[apt.status]}`}>
-                                            {apt.status}
-                                        </span>
-                                    </TableCell>
 
-                                    <TableCell className="px-6 text-right text-[#2B6CEE] font-bold cursor-pointer">
-                                        <Link href="/appointments-details" className="text-sm font-semibold text-[#2B6CEE] hover:underline">View</Link>
-                                    </TableCell>
-
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
-            </div>
-            <div className="w-full lg:w-100 flex flex-col gap-6">
-
-                {/* Upcoming */}
-                <div className="bg-white border border-[#E7EBF3] rounded-[24px] p-6 shadow-sm">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="font-bold text-lg text-[#0D121B]">Upcoming</h3>
-                        <Link href={'/appointments'}><CalendarDaysIcon className="text-[#4C669A] w-5 h-5 cursor-pointer" /></Link>
-                    </div>
-                    <div className="space-y-4">
-                        {[
-                            { day: "WED", date: "25", title: "Hospital Staff Meeting", time: "09:00 - 10:30", color: "border-blue-500" },
-                            { day: "WED", date: "25", title: "Surgery: Williams", time: "11:00 - 02:00", color: "border-purple-500" },
-                            { day: "WED", date: "25", title: "Online Consultation", time: "10:00 - 12:00", color: "border-yellow-500" }
-                        ].map((item, idx) => (
-                            <div key={idx} className="flex gap-4">
-                                <div className="text-center min-w-8">
-                                    <p className="text-[10px] font-bold text-[#4C669A]">{item.day}</p>
-                                    <p className="text-lg font-bold text-[#0D121B]">{item.date}</p>
-                                </div>
-                                <div className={`flex-1 bg-[#F8F9FC] p-3 rounded-xl border-l-4 ${item.color}`}>
-                                    <h4 className="text-sm font-bold text-[#0D121B]">{item.title}</h4>
-                                    <p className="text-xs text-[#4C669A]">{item.time}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="bg-white border border-[#E7EBF3] rounded-[24px] p-6 shadow-sm">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="font-bold text-lg text-[#0D121B]">Pending Scans</h3>
-                        <Link href={'/patient-documents'}>
-                            <button className="text-sm font-semibold text-[#2B6CEE]">View all</button>
-                        </Link>
-                    </div>
-                    <div className="space-y-3">
-                        {pendingScans.map((scan, idx) => {
-                            const Icon = scan.icon;
-                            return (
-                                <div key={idx} className="flex items-center justify-between p-4 border border-[#F1F3F9] rounded-2xl hover:bg-gray-50 cursor-pointer transition-all">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`p-2.5 rounded-xl ${scan.bg} ${scan.color}`}>
-                                            <Icon size={20} />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-[14px] font-bold text-[#0D121B]">{scan.title}</h4>
-                                            <p className="text-[12px] text-[#4C669A]">Patient: {scan.patient}</p>
-                                        </div>
-                                    </div>
-                                    <ChevronRight className="w-5 h-5 text-[#4C669A]" />
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
+    const stats = {
+        total: appointments.length,
+        completed: appointments.filter((a) => a.status === "completed").length,
+        cancelled: appointments.filter((a) => a.status === "cancelled").length,
+    };
+    if (loading) {
+        return <div className="fixed inset-0 flex items-center justify-center z-50">
+            <div className="flex flex-row gap-3">
+                <div className="w-6 h-6 rounded-full bg-blue-700 animate-bounce [animation-delay:.7s]"></div>
+                <div className="w-6 h-6 rounded-full bg-blue-700 animate-bounce [animation-delay:.3s]"></div>
+                <div className="w-6 h-6 rounded-full bg-blue-700 animate-bounce [animation-delay:.7s]"></div>
             </div>
         </div>
+            ;
+    }
+    if (!appointments) {
+        return <div className="p-10 text-center text-red-500">appointments not found</div>;
+    }
+    return (
+        <div className="w-full max-w-280 mx-auto mt-6">
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-white border border-[#E7EBF3] rounded-2xl p-6 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
+                    <div className="flex items-center justify-between mb-4">
+                        <span className="text-[14px] font-medium text-[#64748B]">Total Appointments</span>
+                        <div className="p-2 bg-[#EFF6FF] rounded-xl">
+                            <Calendar size={18} className="text-[#2B6CEE]" />
+                        </div>
+                    </div>
+                    <p className="text-[28px] font-bold text-[#0F172A]">{stats.total}</p>
+                    <p className="text-[13px] text-[#16A34A] mt-1">  {stats.total > 0
+                        ? `${Math.round((stats.completed / stats.total) * 100)}% of daily goal`
+                        : "No appointments yet"}</p>
+                </div>
+
+                <div className="bg-white border border-[#E7EBF3] rounded-2xl p-6 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
+                    <div className="flex items-center justify-between mb-4">
+                        <span className="text-[14px] font-medium text-[#64748B]">Completed</span>
+                        <div className="p-2 bg-[#F0FDF4] rounded-xl">
+                            <CheckCircle size={18} className="text-[#16A34A]" />
+                        </div>
+                    </div>
+                    <p className="text-[28px] font-bold text-[#0F172A]">{stats.completed}</p>
+                    <p className="text-[13px] text-[#64748B] mt-1">
+                        {stats.total > 0
+                            ? `${Math.round((stats.completed / stats.total) * 100)}% of daily goal`
+                            : "No appointments yet"}
+                    </p>
+                </div>
+
+                <div className="bg-white border border-[#E7EBF3] rounded-2xl p-6 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
+                    <div className="flex items-center justify-between mb-4">
+                        <span className="text-[14px] font-medium text-[#64748B]">Cancelled</span>
+                        <div className="p-2 bg-[#FFF1F2] rounded-xl">
+                            <XCircle size={18} className="text-[#E11D48]" />
+                        </div>
+                    </div>
+                    <p className="text-[28px] font-bold text-[#0F172A]">{stats.cancelled}</p>
+                    <p className="text-[13px] text-[#64748B] mt-1">
+                        {stats.cancelled === 0 ? "No cancellations yet" : `${stats.cancelled} cancelled today`}
+                    </p>
+                </div>
+            </div>
+
+            {/* Table */}
+            {/* Container الرئيسي للقسمين */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                {/* 1. قسم الجدول - يأخذ 2 من 3 من المساحة (lg:col-span-2) */}
+                <div className="lg:col-span-2 bg-white border border-[#E7EBF3] shadow-sm rounded-2xl overflow-hidden flex flex-col h-fit">
+
+                    {/* Header */}
+                    <div className="flex justify-between items-center px-6 py-4 border-b border-[#E7EBF3]">
+                        <h2 className="text-lg font-bold text-[#0F172A]">Appointments</h2>
+                    </div>
+
+                    {/* Table Wrapper - هنا تم منع السكرول غير المرغوب */}
+                    <div className="overflow-x-auto w-full">
+                        {appointments.length === 0 ? (
+                            <div className="flex justify-center items-center py-20">
+                                <span className="text-[#94A3B8] text-sm">No appointments found</span>
+                            </div>
+                        ) : (
+                            <Table className="w-full min-w-[600px]"> {/* min-w تضمن أن الجدول لا ينضغط بشكل بشع */}
+                                <TableHeader className="bg-[#F8F9FC]">
+                                    <TableRow className="border-b-[#E7EBF3] hover:bg-transparent">
+                                        <TableHead className="px-6 py-5 text-[13px] uppercase tracking-wider font-bold text-[#64748B]">Time</TableHead>
+                                        <TableHead className="px-6 py-5 text-[13px] uppercase tracking-wider font-bold text-[#64748B]">Patient</TableHead>
+                                        <TableHead className="px-6 py-5 text-[13px] uppercase tracking-wider font-bold text-[#64748B]">Specialty</TableHead>
+                                        <TableHead className="px-6 py-5 text-[13px] uppercase tracking-wider font-bold text-[#64748B]">Status</TableHead>
+                                        <TableHead className="px-6 py-5 text-[13px] uppercase tracking-wider font-bold text-[#64748B] text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+
+                                <TableBody>
+                                    {appointments.map((apt) => (
+                                        <TableRow key={apt.id} className="border-b-[#E7EBF3] last:border-none hover:bg-slate-50/50 transition-colors">
+                                            <TableCell className="px-6 py-3 whitespace-nowrap">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[15px] font-semibold text-[#0F172A]">{formatTime(apt.startTime)}</span>
+                                                    <span className="text-[12px] font-medium text-[#94A3B8] mt-0.5">{getDuration(apt.startTime, apt.endTime)}</span>
+                                                </div>
+                                            </TableCell>
+
+                                            <TableCell className="px-6 py-3">
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar className="h-9 w-9 border border-slate-100 shrink-0">
+                                                        <AvatarFallback className="bg-[#EFF6FF] text-[#2563EB] text-[12px] font-bold">
+                                                            {apt.patient?.name?.substring(0, 2).toUpperCase() ?? "??"}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <span className="text-[14px] font-semibold text-[#334155] truncate max-w-[120px]">
+                                                        {apt.patient?.name}
+                                                    </span>
+                                                </div>
+                                            </TableCell>
+
+                                            <TableCell className="px-6 py-3">
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[12px] font-medium bg-slate-100 text-slate-700 whitespace-nowrap">
+                                                    {apt.doctor?.specialty}
+                                                </span>
+                                            </TableCell>
+
+                                            <TableCell className="px-6 py-3">
+                                                <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-tight border ${statusStyles[apt.status] ?? "bg-slate-50 text-slate-500 border-slate-200"}`}>
+                                                    {apt.status.replace("_", " ")}
+                                                </span>
+                                            </TableCell>
+
+                                            <TableCell className="px-6 py-3 text-right">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <button className="inline-flex items-center justify-center w-8 h-8 text-[#64748B] hover:text-[#2563EB] hover:bg-blue-50 rounded-lg transition-all">
+                                                            <MoreVertical size={16} />
+                                                        </button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-48 p-1 rounded-xl shadow-xl">
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={`/appointments/${apt.id}`} className="flex items-center px-3 py-2 text-sm cursor-pointer">
+                                                                Appointment Details
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </div>
+                </div>
+
+                {/* 2. قسم Upcoming - يأخذ 1 من 3 (lg:col-span-1) */}
+                <div className="lg:col-span-1 flex flex-col gap-6">
+
+                    {/* 1. Upcoming Appointments Card */}
+                    <div className="bg-white border border-[#E7EBF3] rounded-2xl p-6 shadow-sm">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="font-bold text-lg text-[#0D121B]">Upcoming</h3>
+                            <Link href={'/appointments'}>
+                                <CalendarDaysIcon className="text-[#4C669A] w-5 h-5 hover:text-[#2B6CEE] transition-colors" />
+                            </Link>
+                        </div>
+
+                        <div className="space-y-4">
+                            {[
+                                { day: "WED", date: "25", title: "Hospital Staff Meeting", time: "09:00 - 10:30", color: "border-blue-500" },
+                                { day: "WED", date: "25", title: "Surgery: Williams", time: "11:00 - 02:00", color: "border-purple-500" },
+                                { day: "WED", date: "25", title: "Online Consultation", time: "10:00 - 12:00", color: "border-yellow-500" }
+                            ].map((item, idx) => (
+                                <div key={idx} className={`flex gap-4 p-3 border-l-4 rounded-r-xl bg-[#F8FAFC] ${item.color} hover:bg-white hover:shadow-sm transition-all border-y border-r border-y-transparent border-r-transparent hover:border-[#E7EBF3]`}>
+                                    <div className="flex flex-col items-center justify-center min-w-[40px]">
+                                        <span className="text-[10px] font-bold text-[#94A3B8]">{item.day}</span>
+                                        <span className="text-lg font-bold text-[#0F172A]">{item.date}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[14px] font-bold text-[#334155] line-clamp-1">{item.title}</span>
+                                        <span className="text-[12px] text-[#64748B] font-medium">{item.time}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* 2. Pending Scans Card */}
+                    <div className="bg-white border border-[#E7EBF3] rounded-2xl p-6 shadow-sm">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="font-bold text-lg text-[#0D121B]">Pending Scans</h3>
+                            <Link href={'/patient-documents'}>
+                                <button className="text-[13px] font-bold text-[#2B6CEE] hover:underline transition-all">View all</button>
+                            </Link>
+                        </div>
+
+                        <div className="space-y-3">
+                            {pendingScans.map((scan, idx) => {
+                                const Icon = scan.icon;
+                                return (
+                                    <div key={idx} className="group flex items-center justify-between p-4 border border-[#F1F3F9] rounded-2xl hover:border-[#2B6CEE]/30 hover:bg-blue-50/30 cursor-pointer transition-all">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`p-2.5 rounded-xl shrink-0 transition-transform group-hover:scale-110 ${scan.bg} ${scan.color}`}>
+                                                <Icon size={20} />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <h4 className="text-[14px] font-bold text-[#0D121B] truncate">{scan.title}</h4>
+                                                <p className="text-[12px] text-[#4C669A] font-medium truncate">Patient: {scan.patient}</p>
+                                            </div>
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 text-[#94A3B8] group-hover:text-[#2B6CEE] group-hover:translate-x-1 transition-all" />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
     );
 }
 

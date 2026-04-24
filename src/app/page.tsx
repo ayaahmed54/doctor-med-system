@@ -1,11 +1,22 @@
+"use client"
 import { Activity, Calendar, ClipboardListIcon, Clock, LucideClipboardClock, LucideClipboardSignature, LucideUserCheck, MessageSquareDotIcon, Plus, User, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import AppointmentsTable from "@/components/AppointmentsTable/AppointmentsTable";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useSession } from "next-auth/react";
 
 export default function MedicalDashboard() {
+  const { data: session } = useSession();
+
+  const today = new Date().toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
+
+  const doctorName = session?.user?.name || "Doctor";
   return (
     <div className="min-h-screen w-full mx-auto bg-[#F8FAFC] m-0 p-0 overflow-x-hidden">
 
@@ -14,10 +25,10 @@ export default function MedicalDashboard() {
         <div className="w-full  max-w-244.5 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 min-h-16]">
           <div className="flex flex-col gap-1">
             <h1 className="text-[30px] font-bold tracking-[-0.75px] text-[#0D121B] leading-tight">
-              Good Morning, Dr. Smith
+              Good Morning, Dr. {doctorName}
             </h1>
             <p className="text-[16px] text-[#4C669A] leading-normal">
-              Here is your daily overview for today, October 24, 2023.
+              Here is your daily overview for today, {today}.
             </p>
           </div>
 
@@ -97,62 +108,7 @@ export default function MedicalDashboard() {
             </DialogContent>
           </Dialog>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
 
-          <Card className="h-42.5 bg-white border-[#E7EBF3] shadow-sm rounded-3xl p-6 flex flex-col justify-between">
-            <div className="flex justify-between items-center w-full">
-              <div className="w-10 h-10 bg-[#EFF6FF] rounded-2xl flex items-center justify-center">
-                <LucideUserCheck size={20} className="text-[#2B6CEE]" />
-              </div>
-              <Badge className="bg-[#DCFCE7] text-[#15803D] hover:bg-[#DCFCE7] rounded-full border-none">
-                +2%
-              </Badge>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-[14px] font-medium text-[#4C669A]">Total Patients Today</span>
-              <div className="flex items-baseline gap-1">
-                <span className="text-[30px] font-bold text-[#0D121B]">12</span>
-                <span className="text-[20px] text-[#9CA3AF]">/20</span>
-              </div>
-            </div>
-          </Card>
-          <Card className="h-42.5 bg-white border-[#E7EBF3] shadow-sm rounded-3xl p-6 flex flex-col justify-between">
-            <div className="flex justify-between items-center w-full">
-              <div className="w-10 h-10 bg-[#FFF7ED] rounded-2xl flex items-center justify-center">
-                <LucideClipboardClock size={20} className="text-[#F97316]" />
-              </div>
-              <Badge className="bg-[#F3F4F6] text-[#4B5563] hover:bg-[#DCFCE7] rounded-full border-none">
-                0%
-              </Badge>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-[14px] font-medium text-[#4C669A]">Pending Reports</span>
-              <div className="flex items-baseline gap-1">
-                <span className="text-[30px] font-bold text-[#0D121B]">5</span>
-
-              </div>
-            </div>
-          </Card>
-          <Card className="h-42.5 bg-white border-[#E7EBF3] shadow-sm rounded-3xl p-6 flex flex-col justify-between">
-            <div className="flex justify-between items-center w-full">
-              <div className="w-10 h-10 bg-[#FAF5FF] rounded-2xl flex items-center justify-center">
-                <MessageSquareDotIcon size={20} className="text-[#A855F7]" />
-              </div>
-              <Badge className="bg-[#FEE2E2] text-[#B91C1C] hover:bg-[#FEE2E2ss] rounded-full border-none">
-                -1%
-              </Badge>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-[14px] font-medium text-[#4C669A]">New Messages</span>
-              <div className="flex items-baseline gap-1">
-                <span className="text-[30px] font-bold text-[#0D121B]">3</span>
-
-              </div>
-            </div>
-          </Card>
-
-
-        </div>
         <AppointmentsTable />
       </main>
     </div>

@@ -24,6 +24,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useSession } from "next-auth/react";
 
 const items = [
     { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -31,20 +32,25 @@ const items = [
     { title: "Patients", url: "/patients", icon: Users },
     { title: "Scan Analysis", url: "/scan-analysis", icon: Activity },
     { title: "Prescriptions", url: "/prescriptions", icon: ClipboardListIcon },
-    { title: "Chat", url: "/message", icon: MessageSquare },
     { title: "Profile", url: "/profile", icon: UserIcon },
     { title: "Settings", url: "/Settings", icon: Settings },
 ];
 
 export function AppSidebar() {
     const pathname = usePathname();
+    const { data: session, status } = useSession()
+
+    if (status === "loading" || status === "unauthenticated") {
+        return null
+    }
+
+    const user = session?.user
 
     return (
         <Sidebar className="border-r border-[#E7EBF3] bg-white w-[256px]">
 
             <SidebarHeader className="p-0 bg-white">
                 <div className="flex flex-row items-center p-6 gap-3 w-full h-23">
-                    {/* أيقونة اللوجو بخلفية زرقاء خفيفة جداً للتميز */}
                     <div className="flex justify-center items-center w-[44px] h-[44px] bg-[#F0F4FF] rounded-[12px] flex-none">
                         <PlusSquare className="w-[24px] h-[24px] text-[#2B6CEE]" />
                     </div>

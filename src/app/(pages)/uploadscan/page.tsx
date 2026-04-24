@@ -1,11 +1,64 @@
+"use client";
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { ArrowRight, CheckCircle2, ChevronLeft, ChevronRight, CreditCardIcon, FileText, Image, RefreshCw, Trash2, UploadCloud } from 'lucide-react'
+import { ArrowRight, CheckCircle2, ChevronLeft, ChevronRight, CreditCardIcon, FileText, Image, Loader, RefreshCw, Trash2, UploadCloud } from 'lucide-react'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
-import React from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+
+import React, { useState } from 'react'
 
 export default function uploadscan() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const { data: session } = useSession();
+
+    const scanType = searchParams.get("type");
+
+    const [file, setFile] = useState<File | null>(null);
+    const [loading, setLoading] = useState(false);
+
+    const handleAnalyze = async () => {
+        console.log("CLICKED");
+
+        if (!file) {
+            alert("Upload file first");
+            return;
+        }
+
+        if (!session?.token) {
+            alert("Login first");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("medicalScan", file);
+        formData.append("scanType", scanType || "kidney" || "skin" || "breast" || " eye" || "brain" || "heart" || "lung");
+
+        try {
+            setLoading(true);
+
+            const res = await fetch("https://alivio2.vercel.app/api/v1/scans", {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${session.token}`,
+                },
+                body: formData,
+            });
+
+            const data = await res.json();
+
+            console.log("API:", data);
+
+            router.push(`/scanREsult?data=${encodeURIComponent(JSON.stringify(data))}`);
+
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
     return <>
         <div className="min-h-screen bg-[#F6F6F8] p-8 ">
 
@@ -77,56 +130,21 @@ export default function uploadscan() {
                         </div>
 
 
-                        <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" />
+                        <input
+                            type="file"
+                            className="absolute inset-0 opacity-0"
+                            onChange={(e) => setFile(e.target.files?.[0] || null)}
+                        />
+
                     </div>
-                    <div className=" w-full max-w-5xl mt-10 px-8.25">
-                        <h1 className='text-[14px] font-bold mb-3'>Uploaded Files (1)</h1>
-                        <div className="flex items-center justify-between bg-white border border-[#E7EBF3] shadow-[0px_1px_2px_rgba(0,0,0,0.05)] rounded-[24px] p-4 h-24.5">
 
-                            <div className="flex items-center gap-4">
-
-                                <div className="relative w-16 h-16 bg-[#F3F4F6] border border-[#E5E7EB] rounded-3xl flex items-center justify-center overflow-hidden">
-                                    <div className="absolute inset-0 bg-black/10 z-10" />
-                                    <FileText className="w-6 h-7 text-white/80 z-20" />
-                                </div>
-                                <div className="flex flex-col justify-center">
-                                    <h4 className="text-[14px] font-bold text-[#0D121B] leading-5">
-                                        mri_right_knee_jdoe.dicom
-                                    </h4>
-
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <span className="text-[12px] text-[#4C669A]">12.5 MB</span>
-                                        <div className="w-1 h-1 bg-[#D1D5DB] rounded-full" />
-                                        <div className="flex items-center gap-1">
-                                            <CheckCircle2 className="w-3.5 h-3.5 text-[#16A34A]" />
-                                            <span className="text-[12px] font-medium text-[#16A34A]">Ready</span>
-                                        </div>
-                                    </div>
-                                    <div className="w-48 h-1.5 bg-[#F3F4F6] rounded-full mt-2 overflow-hidden">
-                                        <div className="h-full bg-[#135BEC] w-full rounded-full" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant="ghost"
-                                    className="flex items-center gap-2 h-9 px-4 rounded-3xl text-[#4C669A] font-medium "
-                                >
-                                    <RefreshCw className="w-4 h-4" />
-                                    <span>Replace</span>
-                                </Button>
-
-                                <Button
-                                    variant="ghost"
-                                    className="flex items-center gap-2 h-9 px-4 rounded-3xl text-[#EF4444] font-medium "
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                    <span>Remove</span>
-                                </Button>
-                            </div>
-
+                    {file && (
+                        <div className="flex flex-col justify-center">
+                            <h4 className="text-[14px] font-bold text-[#0D121B] leading-5">{file.name}</h4>
                         </div>
-                    </div>
+                    )}
+
+
                     <div className="w-full h-24.75 mt-8 bg-[#F8F9FC] border-t border-[#E7EBF3] flex items-center justify-between px-6  rounded-b-3xl">
 
                         <Button
@@ -141,19 +159,22 @@ export default function uploadscan() {
                                 Back to Selection
                             </Link>
                         </Button>
-
-
                         <Button
-                            className="h-12 px-10 bg-[#135BEC] hover:bg-[#0e48bd] text-white rounded-[24px] text-[16px] font-bold shadow-[0px_10px_15px_-3px_rgba(59,130,246,0.2),0px_4px_6px_-4px_rgba(59,130,246,0.2)] transition-all group p-0"
+                            className="h-12 px-10 bg-[#135BEC] hover:bg-[#0e48bd] text-white rounded-[24px] text-[16px] font-bold transition-all group"
+                            onClick={handleAnalyze}
+                            disabled={loading}
                         >
-                            <Link
-                                href={'./scanREsult'}
-                                className="w-full h-full flex items-center justify-center px-10"
-                            >
-                                Analyze Scan
-                                <ArrowRight className="w-5 h-6 ml-2 group-hover:translate-x-1 transition-transform" />
-                            </Link>
+                            <div className="flex items-center justify-center gap-2">
+
+                                {loading && <Loader className="w-5 h-5 animate-spin" />}
+
+                                <span>Analyze Scan</span>
+
+                                <ArrowRight className="w-5 h-6 group-hover:translate-x-1 transition-transform" />
+                            </div>
                         </Button>
+
+
 
 
                     </div>

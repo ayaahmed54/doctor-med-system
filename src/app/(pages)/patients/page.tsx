@@ -1,10 +1,11 @@
 
 import { AlertTriangle, ArrowDownLeft, ArrowDownRight, ArrowUpRight, Bookmark, BriefcaseMedicalIcon, CalendarArrowDownIcon, CalendarArrowUp, CalendarClock, CalendarDaysIcon, CalendarHeart, CalendarRange, CheckCircle2, CircleX, Download, Droplets, Hourglass, LucideCalendarSync, LucideUserRoundMinus, Phone, Plus, PlusSquareIcon, ShieldAlert, TrendingUp, User, UserMinus, UserPlus, Users } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import TablePatients from '@/components/tablePatients/tablePatients'
+
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import TablePatients from "./_Component/tablePatients/page"
 
 export default function patients() {
     return <>
@@ -109,56 +110,11 @@ export default function patients() {
                 </header>
 
 
-                <main className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 py-6 w-full max-w-7xl mx-auto px-4">
-                    <Card className="h-21.5 border-slate-200 shadow-sm rounded-xl">
-                        <CardContent className="p-4 flex flex-row items-center gap-4 h-full">
-                            <div className="flex items-center justify-center w-12 h-12 bg-blue-50 rounded-full shrink-0">
-                                <Users size={24} className="text-blue-600" />
-                            </div>
-                            <div className="flex flex-col truncate">
-                                <span className="text-slate-500 font-medium text-sm">Total Patients</span>
-                                <span className="text-slate-900 font-bold text-2xl">142</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="h-21.5 border-slate-200 shadow-sm rounded-xl">
-                        <CardContent className="p-4 flex flex-row items-center gap-4 h-full">
-                            <div className="flex items-center justify-center w-12 h-12 bg-blue-50 rounded-full shrink-0">
-                                <CheckCircle2 size={24} className="text-[#16A34A]" />
-                            </div>
-                            <div className="flex flex-col truncate">
-                                <span className="text-slate-500 font-medium text-sm">Active Status</span>
-                                <span className="text-slate-900 font-bold text-2xl">118</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="h-21.5 border-slate-200 shadow-sm rounded-xl">
-                        <CardContent className="p-4 flex flex-row items-center gap-4 h-full">
-                            <div className="flex items-center justify-center w-12 h-12 bg-[#FFFBEB] rounded-full shrink-0">
-                                <PlusSquareIcon size={24} className="text-[#D97706]" />
-                            </div>
-                            <div className="flex flex-col truncate">
-                                <span className="text-slate-500 font-medium text-sm">New This Month</span>
-                                <span className="text-slate-900 font-bold text-2xl">12</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="h-21.5 border-slate-200 shadow-sm rounded-xl">
-                        <CardContent className="p-4 flex flex-row items-center gap-4 h-full">
-                            <div className="flex items-center justify-center w-12 h-12 bg-red-50 rounded-full shrink-0">
-                                <AlertTriangle size={24} className="text-red-600" />
-                            </div>
-                            <div className="flex flex-col truncate">
-                                <span className="text-slate-500 font-medium text-sm">Critical</span>
-                                <span className="text-slate-900 font-bold text-2xl">3</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </main>
-
-
 
                 <TablePatients />
+
+
+
             </div>
         </div>
     </>

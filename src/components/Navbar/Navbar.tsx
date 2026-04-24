@@ -15,11 +15,19 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { signOut, useSession } from "next-auth/react"
 
 export default function DoctorNavbar() {
-    return (
-        <nav className="sticky top-0 z-50 w-full h-16 bg-white border-b border-[#E7EBF3] flex items-center justify-between px-6">
+    const { data: session, status } = useSession()
 
+    if (status === "loading" || status === "unauthenticated") {
+        return null
+    }
+
+    const user = session?.user
+    return (
+
+        <nav className="sticky top-0 z-50 w-full h-16 bg-white border-b border-[#E7EBF3] flex items-center justify-between px-6">
             <div className="flex-1 max-w-xl relative group hidden md:block">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#94A3B8] pointer-events-none" />
                 <Input
@@ -28,7 +36,6 @@ export default function DoctorNavbar() {
                     className="w-full h-9 pl-10 bg-[#F8F9FC] border-none rounded-lg text-sm placeholder:text-[#94A3B8] focus-visible:ring-1 focus-visible:ring-blue-500/20"
                 />
             </div>
-
             <div className="flex items-center gap-3 ml-auto">
 
                 <div className="relative">
@@ -44,8 +51,10 @@ export default function DoctorNavbar() {
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-10 px-1 py-1 rounded-full flex items-center gap-2 hover:bg-slate-50 transition-all outline-none">
                             <Avatar className="w-8 h-8 border border-slate-100">
-                                <AvatarImage src="https://github.com" alt="Doctor" />
-                                <AvatarFallback className="text-[10px] bg-slate-100 text-slate-500 font-bold">DR</AvatarFallback>
+                                <AvatarImage src={user?.profilePic?.url} alt={user?.name || "User"} />
+                                <AvatarFallback className="text-[10px] bg-slate-100 text-slate-500 font-bold">
+                                    {user?.name?.substring(0, 2).toUpperCase()}
+                                </AvatarFallback>
                             </Avatar>
                             <ChevronDown className="w-4 h-4 text-[#94A3B8]" />
                         </Button>
@@ -54,13 +63,12 @@ export default function DoctorNavbar() {
                     <DropdownMenuContent align="end" className="w-56 mt-2 bg-white border-[#E7EBF3] shadow-lg rounded-xl">
                         <DropdownMenuLabel className="font-normal p-4">
                             <div className="flex flex-col space-y-1">
-                                <p className="text-sm font-bold text-[#0A1B39]">Dr. Sarah Chen</p>
-                                <p className="text-xs text-slate-500">Cardiologist</p>
+                                <p className="text-sm font-bold text-[#0A1B39]">{user?.name}</p>
+                                <p className="text-xs text-slate-500 capitalize">{user?.role || "Medical Staff"}</p>
                             </div>
                         </DropdownMenuLabel>
 
                         <DropdownMenuSeparator className="bg-[#E7EBF3]" />
-
                         <DropdownMenuItem asChild>
                             <Link href="/Settings" className="flex items-center w-full cursor-pointer py-2.5 px-3 hover:bg-slate-50 transition-colors">
                                 <Settings className="mr-2 h-4 w-4 text-slate-500" />
@@ -70,12 +78,16 @@ export default function DoctorNavbar() {
 
                         <DropdownMenuSeparator className="bg-[#E7EBF3]" />
 
-                        <DropdownMenuItem asChild>
-                            <Link href="/login" className="flex items-center w-full cursor-pointer py-2.5 px-3 hover:bg-red-50  transition-colors">
+                        <DropdownMenuItem onClick={() => signOut({
+                            callbackUrl: '/login'
+                        })}
 
-                                <span className="text-sm font-bold">Log In</span>
-                            </Link>
+                            className="flex items-center text-red-600 w-full cursor-pointer py-2.5 px-3 hover:bg-red-50  transition-colors"
+                        >
+                            <LogOut className="mr-2 h-4 w-4  text-red-600" />
+                            <span className="text-sm font-bold">Log Out</span>
                         </DropdownMenuItem>
+
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>

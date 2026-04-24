@@ -1,152 +1,222 @@
 "use client"
 
-import React from "react"
-import Image from "next/image"
-import {
-  ShieldAlert, RefreshCw, FileText, MapPin,
-  Stethoscope, Calendar, Check, Clock, Info,
-  LockKeyhole
-} from "lucide-react"
+import { useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
+import { useRouter, useSearchParams } from "next/navigation"
+
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import DoctorAcountStatus from "../../../assets/images/DoctorAcountStatus.jpg"
-import NavDoctor from "@/components/nav_doctor/nav_doctor"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 
-export default function AccountStatusPage() {
+import { Lock, ShieldCheck, Loader2, KeyRound, Eye, EyeOff } from "lucide-react"
+
+const resetPasswordSchema = z.object({
+  password: z
+    .string()
+    .min(8, "At least 8 characters")
+    .regex(/[A-Z]/, "Must include uppercase letter")
+    .regex(/[0-9]/, "Must include number"),
+  passwordConfirm: z.string(),
+}).refine((data) => data.password === data.passwordConfirm, {
+  message: "Passwords don't match",
+  path: ["passwordConfirm"],
+})
+
+export default function ResetPassword() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const token = searchParams.get("token")
+
+  const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [serverError, setServerError] = useState("")
+
+  const form = useForm({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: { password: "", passwordConfirm: "" },
+  })
+
+  const onSubmit = async (values: z.infer<typeof resetPasswordSchema>) => {
+    if (!token) {
+      setServerError("Invalid or missing reset token.")
+      return
+    }
+
+    setIsLoading(true)
+    setServerError("")
+
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 10000)
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_URL_API}/users/reset-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ password: values.password }),
+          signal: controller.signal,
+        }
+      )
+
+      clearTimeout(timeout)
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || "Something went wrong")
+      }
+
+      alert("Password updated successfully!")
+
+      router.push("/login")
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        setServerError("Request timeout. Try again.")
+      } else {
+        setServerError(error.message || "Connection error")
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
-    <>
-      <NavDoctor />
-      <div className="min-h-screen bg-[#101622] text-white p-6 lg:p-12">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <div className="relative w-full min-h-screen bg-[#101622] flex items-center justify-center p-4">
 
-          <div className="lg:col-span-8 space-y-12">
-            <header className="space-y-4">
-              <h1 className="text-4xl font-bold tracking-tight">Account Status</h1>
-              <p className="text-slate-400 text-base max-w-2xl leading-relaxed">
-                Track the verification status of your medical credentials and manage your professional profile information.
+      <div className="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(circle_at_50%_0%,_rgba(59,130,246,0.1)_0%,_transparent_50%)]" />
+
+      <header className="absolute w-full h-16 top-0 left-0 bg-[#111722] flex items-center px-6 md:px-12">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-[#2B6CEE] rounded flex items-center justify-center">
+            <ShieldCheck className="text-white w-5 h-5" />
+          </div>
+          <span className="text-lg font-bold text-white tracking-tight">MediManage</span>
+        </div>
+      </header>
+
+      <div className="w-full max-w-md mt-12">
+        <div className="bg-[#192233] border border-[#232F48] rounded-xl shadow-2xl overflow-hidden flex flex-col">
+          <div className="p-8 md:p-10">
+
+            <div className="mx-auto w-14 h-14 bg-[#2B6CEE]/10 rounded-full flex items-center justify-center mb-6">
+              <KeyRound className="text-[#2B6CEE] w-7 h-7" />
+            </div>
+
+            <h1 className="text-2xl font-bold text-white text-center mb-3">
+              Set New Password
+            </h1>
+
+            <p className="text-sm leading-relaxed text-[#94A3B8] text-center mb-8 px-2">
+              Your identity has been verified. Please choose a strong new password for your account.
+            </p>
+            \
+            {serverError && (
+              <p className="text-red-400 text-sm text-center mb-4">
+                {serverError}
               </p>
-            </header>
-            <section className="relative bg-[#192233] border border-[#232F48] rounded-2xl overflow-hidden shadow-xl flex flex-col md:flex-row min-h-64">
-              <div className="p-8 flex-1 z-20 space-y-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-900/30 rounded-full border border-amber-500/20">
-                  <ShieldAlert className="w-4 h-4 text-amber-400" />
-                  <span className="text-[10px] font-bold text-amber-400 tracking-widest uppercase">Pending Review</span>
-                </div>
+            )}
 
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">Verification In Progress</h2>
-                  <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
-                    Your medical license (MD-482910) is currently under review by our compliance team.
-                    This process typically takes 24-48 hours.
-                  </p>
-                </div>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-white">
+                        New Password
+                      </FormLabel>
 
-                <div className="flex flex-wrap gap-4 pt-2">
-                  <Button className="bg-blue-600 hover:bg-blue-700 h-11 px-6 rounded-xl transition-all">
-                    <RefreshCw className="mr-2 h-4 w-4" /> Refresh Status
-                  </Button>
-                  <Button variant="secondary" className="bg-slate-800 border-none hover:bg-slate-700 text-white h-11 px-6 rounded-xl">
-                    Contact Support
-                  </Button>
-                </div>
-              </div>
-              <div className="relative w-full md:w-2/5 min-h-40 md:min-h-full">
-                <Image src={DoctorAcountStatus} alt="Medical Background" fill className="object-cover opacity-50" />
-              </div>
-            </section>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B] w-5 h-5" />
 
-            <section className="space-y-6">
-              <h3 className="text-lg font-bold">Submitted Credentials</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormControl>
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            disabled={isLoading}
+                            placeholder="••••••••"
+                            className="h-12 pl-11 pr-10 bg-[#111722] border-[#324467] rounded-lg text-white placeholder:text-[#64748B] focus:border-[#2B6CEE] ring-0"
+                            {...field}
+                          />
+                        </FormControl>
 
-                <div className="relative bg-[#192233] border border-[#232F48] p-6 rounded-xl group hover:border-blue-500/50 transition-all">
-                  <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase block mb-2">License Number</span>
-                  <span className="text-lg font-medium text-white">MD-482910</span>
-                  <FileText className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-600 w-5 h-5 group-hover:text-blue-500" />
-                </div>
-                <div className="relative bg-[#192233] border border-[#232F48] p-6 rounded-xl group hover:border-blue-500/50 transition-all">
-                  <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase block mb-2">State of Issue</span>
-                  <span className="text-lg font-medium text-white">California (CA)</span>
-                  <MapPin className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-600 w-5 h-5 group-hover:text-blue-500" />
-                </div>
-                <div className="relative bg-[#192233] border border-[#232F48] p-6 rounded-xl group hover:border-blue-500/50 transition-all">
-                  <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase block mb-2">Specialty</span>
-                  <span className="text-lg font-medium text-white">Cardiology</span>
-                  <Stethoscope className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-600 w-5 h-5 group-hover:text-blue-500" />
-                </div>
-                <div className="relative bg-[#192233] border border-[#232F48] p-6 rounded-xl group hover:border-blue-500/50 transition-all">
-                  <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase block mb-2">Years of Experience</span>
-                  <span className="text-lg font-medium text-white">12+ Years</span>
-                  <Calendar className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-600 w-5 h-5 group-hover:text-blue-500" />
-                </div>
-              </div>
-            </section>
+                        <button
+                          type="button"
+                          aria-label="Toggle password visibility"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-white"
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+
+                      <FormMessage className="text-red-400 text-xs" />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="passwordConfirm"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-white">
+                        Confirm Password
+                      </FormLabel>
+
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B] w-5 h-5" />
+
+                        <FormControl>
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            disabled={isLoading}
+                            placeholder="••••••••"
+                            className="h-12 pl-11 bg-[#111722] border-[#324467] rounded-lg text-white placeholder:text-[#64748B] focus:border-[#2B6CEE] ring-0"
+                            {...field}
+                          />
+                        </FormControl>
+                      </div>
+
+                      <FormMessage className="text-red-400 text-xs" />
+                    </FormItem>
+                  )}
+                />
+
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-12 bg-[#2B6CEE] hover:bg-blue-600 text-white font-bold text-sm rounded-lg shadow-lg flex items-center justify-center gap-2 mt-2"
+                >
+                  {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {isLoading ? "Updating..." : "Reset Password"}
+                </Button>
+
+              </form>
+            </Form>
           </div>
 
-          {/* */}
-          <div className="lg:col-span-4 sticky top-12">
-            <Card className="bg-[#192233] border-[#232F48] shadow-sm rounded-xl overflow-hidden">
-              <CardHeader className="p-6 pb-2">
-                <CardTitle className="text-lg font-bold text-white">Application Timeline</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 space-y-6">
-                <div className="space-y-0 relative">
-                  <div className="relative flex gap-4 pb-10">
-                    <div className="absolute left-4 top-8 w-0.5 h-full bg-green-500/30" />
-                    <div className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full shrink-0 bg-green-500/20">
-                      <Check className="w-4 h-4 text-green-400" />
-                    </div>
-                    <div className="pt-1">
-                      <h4 className="text-sm font-bold text-white">Registration Completed</h4>
-                      <p className="text-xs mt-1 text-slate-400">Account created on Oct 24, 2023</p>
-                    </div>
-                  </div>
-                  <div className="relative flex gap-4 pb-10">
-                    <div className="absolute left-4 top-8 w-0.5 h-full bg-green-500/30" />
-                    <div className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full shrink-0 bg-green-500/20">
-                      <Check className="w-4 h-4 text-green-400" />
-                    </div>
-                    <div className="pt-1">
-                      <h4 className="text-sm font-bold text-white">Documents Uploaded</h4>
-                      <p className="text-xs mt-1 text-slate-400">Medical license & ID submitted</p>
-                    </div>
-                  </div>
-                  <div className="relative flex gap-4 pb-10">
-                    <div className="absolute left-4 top-8 w-0.5 h-full bg-slate-700" />
-                    <div className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full shrink-0 bg-blue-600 shadow-lg shadow-blue-500/20">
-                      <Clock className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="pt-1">
-                      <h4 className="text-sm font-bold text-blue-500">Verification in Progress</h4>
-                      <p className="text-xs mt-1 text-slate-400">Compliance team reviewing documents</p>
-                    </div>
-                  </div>
-                  <div className="relative flex gap-4 pb-0">
-                    <div className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full shrink-0 bg-slate-800 border-2 border-slate-700">
-                      <LockKeyhole className="w-4 h-4 text-slate-500" />
-                    </div>
-                    <div className="pt-1">
-                      <h4 className="text-sm font-bold text-slate-400">Account Activation</h4>
-                      <p className="text-xs mt-1 text-slate-500">Final approval & access grant</p>
-                    </div>
-                  </div>
-
-                </div>
-                <div className="bg-blue-900/10 rounded-lg p-4 flex items-start gap-3 border border-blue-500/10">
-                  <Info className="w-5 h-5 text-blue-500 shrink-0" />
-                  <p className="text-slate-400 text-xs leading-relaxed">
-                    Need to update your documents? You can re-upload them in the{' '}
-                    <button className="text-blue-500 font-medium hover:underline">Settings</button>{' '}
-                    page before the review is completed.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="mt-auto h-12 bg-[#111722]/50 border-t border-[#232F48] flex items-center justify-center gap-2 text-[10px] text-[#475569] font-medium uppercase tracking-wider">
+            <ShieldCheck className="w-3 h-3" />
+            Encrypted Security
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
+
 
 

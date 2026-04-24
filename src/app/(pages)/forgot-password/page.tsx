@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -14,24 +15,56 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Mail, ChevronLeft, ShieldCheck } from "lucide-react"
+import { Mail, ChevronLeft, ShieldCheck, Loader2 } from "lucide-react"
 import { forgotPasswordSchema } from "@/schema/forgotPasswordSchema"
-
 export default function ForgotPassword() {
     const router = useRouter()
-    const form = useForm({
+    const [isLoading, setIsLoading] = useState(false)
+
+
+    const form = useForm<z.infer<typeof forgotPasswordSchema>>({
         defaultValues: { email: "" },
         resolver: zodResolver(forgotPasswordSchema),
     });
 
-    const onSubmit = (values: z.infer<typeof forgotPasswordSchema>) => {
-        console.log(values);
-        router.push("/verification");
+    const onSubmit = async (values: z.infer<typeof forgotPasswordSchema>) => {
+        setIsLoading(true);
+        form.clearErrors("email");
+
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_URL_API}/users/forgotPassword`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: values.email }),
+            });
+
+            if (response.ok) {
+                router.push(`/reset-password?email=${encodeURIComponent(values.email)}`);
+            } else {
+                const data = await response.json();
+                form.setError("email", {
+                    type: "manual",
+                    message: data.message || "This email is not registered.",
+                });
+            }
+        } catch (error) {
+            form.setError("email", {
+                message: "Connection error. Please try again.",
+            });
+        }
+        setIsLoading(false);
+
     };
+
+
+
+
+
+
+
 
     return (
         <div className="relative w-full min-h-screen bg-[#101622] flex items-center justify-center p-4">
-            {/* Gradient Overlay */}
             <div className="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(circle_at_50%_0%,_rgba(59,130,246,0.1)_0%,_transparent_50%)]" />
 
             <header className="absolute w-full h-16 top-0 left-0 bg-[#111722] flex items-center px-6 md:px-12">
@@ -52,7 +85,6 @@ export default function ForgotPassword() {
             </header>
 
             <div className="w-full max-w-md mt-12">
-
                 <button
                     onClick={() => router.push("/login")}
                     className="flex items-center text-[#94A3B8] mb-6 hover:text-white transition-colors"
@@ -60,9 +92,9 @@ export default function ForgotPassword() {
                     <ChevronLeft className="w-5 h-5" />
                     <span className="ml-2 text-sm font-medium">Back to Sign In</span>
                 </button>
-                <div className="bg-[#192233] border border-[#232F48] rounded-xl shadow-2xl overflow-hidden flex flex-col min-h-137.5">
-                    <div className="p-8 md:p-10 flex-1">
 
+                <div className="bg-[#192233] border border-[#232F48] rounded-xl shadow-2xl overflow-hidden flex flex-col min-h-[550px]">
+                    <div className="p-8 md:p-10 flex-1">
                         <div className="mx-auto w-14 h-14 bg-[#2B6CEE]/10 rounded-full flex items-center justify-center mb-6">
                             <Mail className="text-[#2B6CEE] w-7 h-7" />
                         </div>
@@ -84,8 +116,9 @@ export default function ForgotPassword() {
                                                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B] w-5 h-5" />
                                                 <FormControl>
                                                     <Input
+                                                        disabled={isLoading}
                                                         placeholder="doctor@clinic.com"
-                                                        className="h-12 pl-11 bg-[#111722] border-[#324467] rounded-lg text-white placeholder:text-[#64748B] focus:border-[#2B6CEE] ring-0"
+                                                        className="h-12 pl-11 bg-[#111722] border-[#324467] rounded-lg text-white placeholder:text-[#64748B] focus:border-[#2B6CEE] ring-0 disabled:opacity-50"
                                                         {...field}
                                                     />
                                                 </FormControl>
@@ -95,20 +128,28 @@ export default function ForgotPassword() {
                                     )}
                                 />
 
-                                <Button type="submit" className="w-full h-12 bg-[#2B6CEE] hover:bg-blue-600 text-white font-bold text-sm rounded-lg shadow-lg">
-                                    Send Reset Link
+                                <Button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full h-12 bg-[#2B6CEE] hover:bg-blue-600 text-white font-bold text-sm rounded-lg shadow-lg flex items-center justify-center gap-2"
+                                >
+                                    {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                    {isLoading ? "Verifying..." : "Send Reset Link"}
                                 </Button>
                             </form>
                         </Form>
+
                         <div className="relative flex items-center justify-center my-10">
                             <div className="w-full border-t border-[#232F48]" />
                             <span className="absolute bg-[#192233] px-3 text-[10px] font-bold text-[#64748B] tracking-widest uppercase">Or</span>
                         </div>
+
                         <div className="text-center">
                             <span className="text-sm text-[#94A3B8]">Don't have an account? </span>
                             <button className="text-sm font-semibold text-[#2B6CEE] ml-1 hover:underline">Contact Admin</button>
                         </div>
                     </div>
+
                     <div className="mt-auto h-12 bg-[#111722]/50 border-t border-[#232F48] flex items-center justify-center gap-2">
                         <ShieldCheck className="text-[#94A3B8] w-4 h-4" />
                         <span className="text-[10px] font-medium text-[#94A3B8] uppercase tracking-wider">Secured by MediManage</span>
@@ -118,6 +159,7 @@ export default function ForgotPassword() {
         </div>
     )
 }
+
 
 
 
