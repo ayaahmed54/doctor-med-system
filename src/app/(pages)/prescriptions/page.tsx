@@ -134,12 +134,10 @@ export default function prescriptions() {
             ? Math.round((prescriptions.filter((a) => a.status === "active").length / prescriptions.length) * 100)
             : 0,
 
-        // نسبة الـ completed من الكل
         completedRate: prescriptions.length > 0
             ? Math.round((prescriptions.filter((a) => a.status === "completed").length / prescriptions.length) * 100)
             : 0,
 
-        // نسبة الـ cancelled من الكل
         cancelledRate: prescriptions.length > 0
             ? Math.round((prescriptions.filter((a) => a.status === "cancelled").length / prescriptions.length) * 100)
             : 0,
@@ -167,16 +165,7 @@ export default function prescriptions() {
                                 Manage patient medication records and renewal requests
                             </p>
                         </div>
-                        <div className="flex flex-row items-center gap-3 w-full md:w-auto">
-                            <Link href="/create-prescription" className="w-full md:w-auto">
-                                <Button className="w-full md:w-auto flex items-center justify-center px-5 h-10 bg-[#2B6CEE] shadow-lg shadow-blue-500/20 rounded-lg hover:bg-blue-700 transition-all gap-2 border-none">
-                                    <Plus size={18} className="text-white" />
-                                    <span className="text-white font-bold text-sm whitespace-nowrap">
-                                        New Prescription
-                                    </span>
-                                </Button>
-                            </Link>
-                        </div>
+
                     </div>
                 </header>
 

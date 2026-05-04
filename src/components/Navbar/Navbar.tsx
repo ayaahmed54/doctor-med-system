@@ -38,14 +38,7 @@ export default function DoctorNavbar() {
             </div>
             <div className="flex items-center gap-3 ml-auto">
 
-                <div className="relative">
-                    <Button variant="ghost" size="icon" className="w-10 h-10 rounded-lg hover:bg-slate-50 transition-colors">
-                        <Bell className="w-6 h-6 text-[#475569]" />
-                    </Button>
-                    <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-[#EF4444] border-2 border-white rounded-full shadow-sm" />
-                </div>
 
-                <Separator orientation="vertical" className="h-8 w-px bg-[#E7EBF3] mx-1" />
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

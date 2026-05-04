@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useState } from "react";
-import { Plus, List, LayoutGrid, Filter, MoreHorizontal, Search, Printer, Download, FilterIcon, ListFilterIcon, Grid3x2Icon, Grid3X3Icon, Calendar, AlertTriangle, PlusSquareIcon, CheckCircle2, Users, MoreVertical } from "lucide-react";
+import { Plus, List, LayoutGrid, Filter, MoreHorizontal, Search, Printer, Download, FilterIcon, ListFilterIcon, Grid3x2Icon, Grid3X3Icon, Calendar, AlertTriangle, PlusSquareIcon, CheckCircle2, Users, MoreVertical, LocationEditIcon } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,7 @@ interface Patient {
 
 
 const statusStyles: Record<string, string> = {
-    "Active": "bg-[#E6F9F0] text-[#00C853] border-transparent",
+    "completed": "bg-[#E6F9F0] text-[#00C853] border-transparent",
     "Pending": "bg-[#EFF4FF] text-[#2B6CEE] border-transparent",
     "Critical": "bg-[#FFF0F0] text-[#FF5252] border-transparent",
     "Discharged": "bg-[#F8F9FC] text-[#6B7280] border-transparent",
@@ -184,16 +184,6 @@ export default function TablePatients() {
                         />
                     </div>
 
-                    <Select>
-                        <SelectTrigger className="h-10 w-35 border-[#E7EBF3] bg-[#F8F9FC] text-sm font-normal text-[#0D121B]">
-                            <SelectValue placeholder="All Statuses" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="active">Active</SelectItem>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="completed">Completed</SelectItem>
-                        </SelectContent>
-                    </Select>
                 </div>
                 <div className="flex items-center gap-2">
                     <Button variant="ghost" size="icon" className="h-10 w-10 text-[#4C669A]">
@@ -218,7 +208,7 @@ export default function TablePatients() {
                             <TableHead className="w-32.5] px-6 py-4 text-[12px] font-semibold uppercase tracking-wider text-[#4C669A]">ID</TableHead>
                             <TableHead className="w-36.5 px-6 py-4 text-[12px] font-semibold uppercase tracking-wider text-[#4C669A]">Age / Gender</TableHead>
                             <TableHead className="w-40.75 px-6 py-4 text-[12px] font-semibold uppercase tracking-wider text-[#4C669A]">bloodType</TableHead>
-                            <TableHead className="w-42.5 px-6 py-4 text-[12px] font-semibold uppercase tracking-wider text-[#4C669A]">Next Visit</TableHead>
+                            <TableHead className="w-42.5 px-6 py-4 text-[12px] font-semibold uppercase tracking-wider text-[#4C669A]">Address</TableHead>
                             <TableHead className="w-38 px-6 py-4 text-[12px] font-semibold uppercase tracking-wider text-[#4C669A]">Status</TableHead>
                             <TableHead className="text-right px-6 py-4 text-[12px] font-semibold uppercase tracking-wider text-[#4C669A]">Actions</TableHead>
                         </TableRow>
@@ -235,7 +225,9 @@ export default function TablePatients() {
                                         </div>
                                     </div>
                                 </TableCell>
-                                <TableCell className="px-6 py-0 text-[14px] text-[#4C669A]">{patient._id}</TableCell>
+                                <TableCell className="px-6 py-0 text-[14px] text-[#4C669A]">
+                                    {`#PAT-${patient._id.slice(-4).toUpperCase()}`}
+                                </TableCell>
                                 <TableCell className="px-6 py-0">
                                     <div className="flex flex-col">
                                         <span className="text-[14px] text-[#0D121B]">{calcAge(patient.dateOfBirth)} years</span>
@@ -245,17 +237,20 @@ export default function TablePatients() {
                                 <TableCell className="px-6 py-0 text-[14px] text-[#0D121B]">{patient.bloodType}</TableCell>
                                 <TableCell className="px-6 py-0">
                                     <div className="flex items-start gap-2">
-                                        <Calendar className="h-4 w-4 mt-0.5 text-[#4C669A]" />
+                                        <LocationEditIcon className="h-4 w-4 mt-0.5 text-[#4C669A]" />
                                         <div className="flex flex-col">
-                                            <span className="text-[14px] font-medium text-[#0D121B]">{timeAgo(patient.updatedAt)}</span>
+                                            <span className="text-[14px] font-medium text-[#0D121B]">
+
+                                                {patient.address.street}
+                                            </span>
 
                                         </div>
                                     </div>
                                 </TableCell>
                                 <TableCell className="px-6 py-0">
-                                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[12px] font-medium border ${statusStyles[patient.status] || "bg-gray-100 text-gray-600"}`}>
-                                        <span className={`h-1.5 w-1.5 rounded-full bg-current`} />
-                                        {patient.status}
+                                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[12px] font-medium border border-green-100 bg-green-50 text-green-600">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-green-600" />
+                                        completed
                                     </div>
                                 </TableCell>
                                 <TableCell className="px-6 py-0 text-right">

@@ -9,10 +9,11 @@ import {
     GraduationCap
 } from 'lucide-react'
 import Link from 'next/link'
-
+import Image from 'next/image';
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
-
+import ImageProfile from '@/components/Imageprofile/imageprofile';
+import { useSession } from 'next-auth/react';
 interface Doctor {
     _id: string
     displayName: string
@@ -26,19 +27,16 @@ interface Doctor {
     isActive: boolean
     workingHours: { start: string; end: string }
     user: { _id: string; name: string; email: string }
+    profilePic?: { url?: string }
 }
-
-
-async function getDoctorData(): Promise<Doctor | null> {
+export const dynamic = "force-dynamic"
+async function getDoctorData(token: string): Promise<Doctor | null> {
     try {
         const session = await getServerSession(authOptions)
 
         const response = await fetch(`${process.env.NEXT_PUBLIC_URL_API}/doctors/me`, {
-            next: { revalidate: 300 },
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${session?.token}`,
-            }
+            headers: { 'Authorization': `Bearer ${token}` },
+            next: { revalidate: 300 }
         })
 
         const data = await response.json()
@@ -49,6 +47,7 @@ async function getDoctorData(): Promise<Doctor | null> {
         return null
     }
 }
+
 
 function formatSpecialty(specialty: string): string {
     return specialty.charAt(0).toUpperCase() + specialty.slice(1)
@@ -63,8 +62,9 @@ function formatSchedule(schedule: string[]): string {
 }
 
 export default async function Profile() {
-    const doctor = await getDoctorData()
-
+    const session = await getServerSession(authOptions)
+    const token = session?.token as string
+    const doctor = await getDoctorData(token)
     if (!doctor) {
         return (
             <div className="min-h-screen w-full flex items-center justify-center bg-[#F8FAFC]">
@@ -102,38 +102,32 @@ export default async function Profile() {
         },
     ]
 
+
+    console.log("DOCTOR FULL:", doctor)
     return (
         <div className="min-h-screen w-full bg-[#F8FAFC]">
             <div className="w-full max-w-[1100px] mx-auto p-4 md:p-6 flex flex-col gap-6">
 
-                {/* ── Hero Card ── */}
                 <Card className="bg-white border-[#E7EBF3] shadow-[0px_1px_2px_rgba(0,0,0,0.05)] rounded-2xl p-6">
                     <CardContent className="p-0 flex flex-wrap items-start gap-5">
 
-                        <div className="relative shrink-0">
-                            <div className="w-[88px] h-[88px] rounded-full bg-[#EFF6FF] border-[3px] border-white shadow-[0_0_0_1px_#E7EBF3] flex items-center justify-center">
-                                <span className="text-[28px] font-medium text-[#2B6CEE]">
-                                    {doctor.displayName.charAt(0)}
-                                </span>
+                        <div className="relative shrink-0 w-[88px] h-[88px]">
+                            <div className="w-full h-full rounded-full bg-[#EFF6FF] border-[3px] border-white shadow-[0_0_0_1px_#E7EBF3] overflow-hidden">
+                                <ImageProfile />
                             </div>
-                            {doctor.isActive && (
-                                <div className="absolute bottom-1 right-1 w-[14px] h-[14px] bg-[#22C55E] border-[3px] border-white rounded-full" />
-                            )}
                         </div>
 
-                        {/* Info */}
                         <div className="flex-1 min-w-[200px]">
                             <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
                                     <h2 className="text-[20px] font-medium text-[#0D121B] leading-7">
-                                        {doctor.displayName}
+                                        {doctor.user.name}
                                     </h2>
                                     <p className="text-[14px] text-[#2B6CEE] mt-0.5">
                                         {formatSpecialty(doctor.specialty)}
                                     </p>
                                 </div>
 
-                                {/* Actions */}
                                 <div className="flex gap-2">
                                     <Link href="/Settings">
                                         <button className="h-9 px-3.5 flex items-center gap-1.5 rounded-xl border border-[#E7EBF3] text-[13px] font-medium text-[#0D121B] hover:bg-[#F8FAFC] transition-colors">
@@ -148,7 +142,6 @@ export default async function Profile() {
                                 </div>
                             </div>
 
-                            {/* Meta */}
                             <div className="flex flex-wrap gap-4 mt-3">
                                 <span className="flex items-center gap-1.5 text-[13px] text-[#4C669A]">
                                     <Clock size={14} />
@@ -169,7 +162,6 @@ export default async function Profile() {
                     </CardContent>
                 </Card>
 
-                {/* ── Stats ── */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {STATS.map((stat) => (
                         <div
@@ -189,13 +181,10 @@ export default async function Profile() {
                     ))}
                 </div>
 
-                {/* ── Bottom Grid ── */}
                 <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
 
-                    {/* Left column */}
                     <div className="flex flex-col gap-5">
 
-                        {/* Contact Information */}
                         <Card className="bg-white border-[#E7EBF3] shadow-[0px_1px_2px_rgba(0,0,0,0.05)] rounded-2xl">
                             <CardHeader className="p-6 pb-3">
                                 <CardTitle className="text-[15px] font-medium text-[#0D121B]">
@@ -225,8 +214,6 @@ export default async function Profile() {
                                 ))}
                             </CardContent>
                         </Card>
-
-                        {/* Specialty */}
                         <Card className="bg-white border-[#E7EBF3] shadow-[0px_1px_2px_rgba(0,0,0,0.05)] rounded-2xl">
                             <CardHeader className="p-6 pb-3">
                                 <CardTitle className="text-[15px] font-medium text-[#0D121B]">Specialty</CardTitle>
@@ -238,7 +225,6 @@ export default async function Profile() {
                             </CardContent>
                         </Card>
 
-                        {/* Working Schedule */}
                         <Card className="bg-white border-[#E7EBF3] shadow-[0px_1px_2px_rgba(0,0,0,0.05)] rounded-2xl">
                             <CardHeader className="p-6 pb-3">
                                 <CardTitle className="text-[15px] font-medium text-[#0D121B]">Working schedule</CardTitle>
@@ -256,7 +242,7 @@ export default async function Profile() {
                         </Card>
                     </div>
 
-                    {/* About Me */}
+                    
                     <div>
                         <Card className="bg-white border-[#E7EBF3] shadow-[0px_1px_2px_rgba(0,0,0,0.05)] rounded-2xl self-start">
                             <CardContent className="p-6">

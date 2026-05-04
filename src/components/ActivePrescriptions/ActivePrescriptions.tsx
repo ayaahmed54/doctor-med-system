@@ -84,33 +84,43 @@ export default function ActivePrescriptions() {
             </div>
             <div className="p-4 flex flex-col gap-3">
                 <div className="p-4 flex flex-col gap-3">
-                    {history.map((item) =>
-                        item.medications.map((med) => (
-                            <div
-                                key={med._id}
-                                className="flex items-center justify-between p-3 border border-[#F1F5F9] rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 bg-[#EEF2FF] rounded-full flex items-center justify-center">
-                                        <Pill className="text-[#4F46E5]" size={20} />
+
+                    {history.some(item => item.medications.length > 0) ? (
+                        history.map((item) =>
+                            item.medications.map((med) => (
+                                <div
+                                    key={med._id}
+                                    className="flex items-center justify-between p-3 border border-[#F1F5F9] rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-9 h-9 bg-[#EEF2FF] rounded-full flex items-center justify-center">
+                                            <Pill className="text-[#4F46E5]" size={20} />
+                                        </div>
+
+                                        <div className="flex flex-col text-start">
+                                            <span className="font-semibold text-[14px] text-[#0D121B]">
+                                                {med.name}
+                                            </span>
+                                            <span className="text-[12px] text-[#64748B]">
+                                                {med.strength} • {med.frequency}
+                                            </span>
+                                        </div>
                                     </div>
 
-                                    <div className="flex flex-col text-start">
-                                        {/* ✅ اسم الدوا */}
-                                        <span className="font-semibold text-[14px] text-[#0D121B]">
-                                            {med.name}
-                                        </span>
-
-                                        {/* ✅ التفاصيل */}
-                                        <span className="text-[12px] text-[#64748B]">
-                                            {med.strength} • {med.frequency}
-                                        </span>
-                                    </div>
+                                    <MoreVertical className="text-[#94A3B8] cursor-pointer" size={18} />
                                 </div>
-
-                                <MoreVertical className="text-[#94A3B8] cursor-pointer" size={18} />
+                            ))
+                        )
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-8 px-4 border-2 border-dashed border-[#F1F5F9] rounded-xl bg-slate-50/50">
+                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-3">
+                                <Pill className="text-[#94A3B8]" size={24} />
                             </div>
-                        ))
+                            <p className="text-sm text-[#64748B] font-medium text-center">
+                                No active prescriptions found.
+                            </p>
+
+                        </div>
                     )}
                 </div>
             </div>  </div>

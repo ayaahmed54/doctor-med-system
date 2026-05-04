@@ -11,7 +11,6 @@ type Medication = {
     duration: string;
 };
 
-// 🟢 CREATE
 export async function AddPrescription(
     appointmentId: string,
     diagnosis: string,
@@ -42,7 +41,6 @@ export async function AddPrescription(
     return data;
 }
 
-//  UPDATE
 export async function UpdatePrescription(
     id: string,
     diagnosis: string,

@@ -79,44 +79,37 @@ export default function Notes() {
                 <h3 className="text-lg font-bold text-[#0D121B] leading-7">
                     Clinical Notes
                 </h3>
-                <Button
-                    variant="outline"
-                    className="flex items-center gap-1 h-8 px-3 border-none text-[#2B6CEE] hover:bg-blue-50"
-                >
-                    <Plus size={18} className="text-[#2B6CEE]" />
-                    <span className="text-sm font-medium">Add Note</span>
-                </Button>
+
             </CardHeader>
             <CardContent className="flex flex-col p-5 gap-4">
+                {history.length > 0 ? (
+                    history.map((item) => (
+                        <div
+                            key={item._id}
+                            className="flex flex-col gap-1 p-3 bg-white border border-[#E7EBF3] rounded-lg"
+                        >
+                            <div className="flex flex-row justify-between items-center w-full">
+                                <span className="text-xs font-bold text-[#0D121B]">
+                                    {item.doctor.displayName}
+                                </span>
+                                <span className="text-xs text-[#4C669A]">
+                                    {new Date(item.createdAt).toLocaleString()}
+                                </span>
+                            </div>
 
-
-
-                {/* notes */}
-                {history.map((item) => (
-                    <div
-                        key={item._id}
-                        className="flex flex-col gap-1 p-3 bg-white border border-[#E7EBF3] rounded-lg"
-                    >
-                        <div className="flex flex-row justify-between items-center w-full">
-
-                            {/* ✅ اسم الدكتور */}
-                            <span className="text-xs font-bold text-[#0D121B]">
-                                {item.doctor.displayName}
-                            </span>
-
-                            {/* ✅ التاريخ */}
-                            <span className="text-xs text-[#4C669A]">
-                                {new Date(item.createdAt).toLocaleString()}
-                            </span>
+                            <p className="text-sm text-[#4C669A] leading-5">
+                                {item.notes}
+                            </p>
                         </div>
+                    ))
+                ) : (
 
-                        {/* ✅ note */}
-                        <p className="text-sm text-[#4C669A] leading-5">
-                            {item.notes}
+                    <div className="flex flex-col items-center justify-center py-10 px-4 border-2 border-dashed border-[#E7EBF3] rounded-lg">
+                        <p className="text-sm text-[#4C669A] font-medium text-center">
+                            There are no comments specific to this patient.
                         </p>
                     </div>
-                ))}
-
+                )}
             </CardContent>
         </Card>
 

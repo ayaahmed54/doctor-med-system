@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react'
 import { Card, CardContent } from '../ui/card';
 import { Cake, IdCard, LoaderCircleIcon, Mars } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { useParams } from 'next/navigation';
 
 interface AboutpatientsProps {
     patientId: string;
 }
+
 interface PatientData {
-    patientId: string;
     _id: string;
     displayName: string;
     phone: string;
@@ -22,20 +21,15 @@ interface PatientData {
         city: string;
     };
 }
-interface AboutpatientsProps {
-    patientId: string;
-}
 
-export default function Aboutpatients() {
+export default function Patientinfo({ patientId }: AboutpatientsProps) {
 
-    const params = useParams();
-    const id = params?.id as string;
     const { data: session } = useSession();
     const [patient, setPatient] = useState<PatientData | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!session) return;
+        if (!session || !patientId) return;
 
         async function getPatient() {
             const userToken = session?.token;
@@ -43,7 +37,7 @@ export default function Aboutpatients() {
 
             try {
                 const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_URL_API}/patients/${id}`,
+                    `${process.env.NEXT_PUBLIC_URL_API}/patients/${patientId}`,
                     {
                         method: "GET",
                         headers: {
@@ -54,32 +48,34 @@ export default function Aboutpatients() {
                 );
 
                 const result = await response.json();
+                console.log(result);
                 setPatient(result.data.data);
-                console.log("PATIENT:", result.data.data);
             } catch (error) {
                 console.error("Failed to fetch patient:", error);
             } finally {
                 setLoading(false);
             }
         }
-        console.log(process.env.NEXT_PUBLIC_URL_API);
-        console.log(`${process.env.NEXT_PUBLIC_URL_API}/patients/${id}`);
 
         getPatient();
-    }, [session, id]);
+    }, [session, patientId]);
+
     if (loading) {
-        return <div className=" flex  text-center items-center justify-center text-blue-600 "><LoaderCircleIcon className="w-10 h-10 animate-spin" /></div>;
+        return (
+            <div className="flex text-center items-center justify-center text-blue-600">
+                <LoaderCircleIcon className="w-10 h-10 animate-spin" />
+            </div>
+        );
     }
 
     if (!patient) {
         return <div className="p-10 text-center text-red-500">Patient not found</div>;
     }
 
-    return <>
+    return (
         <Card className="w-full min-h-40 bg-white border-[#E7EBF3] shadow-[0px_1px_2px_rgba(0,0,0,0.05)] rounded-2xl p-4 md:p-6 flex flex-col justify-center overflow-hidden">
             <CardContent className="p-0 flex flex-col md:flex-row justify-between items-center md:items-start lg:items-center w-full gap-6">
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-5 text-center md:text-left w-full">
-
                     <div className="flex flex-col gap-1 w-full items-center md:items-start">
                         <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                             <h1 className="font-['Inter'] font-bold text-[20px] md:text-[24px] text-[#0D121B] tracking-[-0.6px]">
@@ -117,9 +113,7 @@ export default function Aboutpatients() {
                         </div>
                     </div>
                 </div>
-
             </CardContent>
         </Card>
-
-    </>
+    );
 }

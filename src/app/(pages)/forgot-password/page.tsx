@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Mail, ChevronLeft, ShieldCheck, Loader2 } from "lucide-react"
 import { forgotPasswordSchema } from "@/schema/forgotPasswordSchema"
+import { toast } from "sonner"
 export default function ForgotPassword() {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
@@ -39,7 +40,8 @@ export default function ForgotPassword() {
             });
 
             if (response.ok) {
-                router.push(`/reset-password?email=${encodeURIComponent(values.email)}`);
+                toast.success("Check your email for the reset link!");
+
             } else {
                 const data = await response.json();
                 form.setError("email", {
@@ -55,11 +57,6 @@ export default function ForgotPassword() {
         setIsLoading(false);
 
     };
-
-
-
-
-
 
 
 

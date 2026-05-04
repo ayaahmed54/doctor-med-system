@@ -105,7 +105,6 @@ export default function MedicalAppointmentsTable() {
     return (
         <div className="w-full max-w-280 mx-auto mt-6">
 
-            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="bg-white border border-[#E7EBF3] rounded-2xl p-6 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]">
                     <div className="flex items-center justify-between mb-4">
@@ -168,70 +167,7 @@ export default function MedicalAppointmentsTable() {
                         </div>
                     </div>
 
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button className="w-full md:w-auto h-9 bg-[#2B6CEE] hover:bg-[#1e56cc] text-white font-bold text-[14px] rounded-xl shadow-lg shadow-blue-500/10 gap-2 px-6">
-                                <Plus size={18} />
-                                <span className="whitespace-nowrap">New Appointment</span>
-                            </Button>
-                        </DialogTrigger>
 
-                        <DialogContent className="max-w-[90%] sm:max-w-125 bg-white rounded-3xl p-0 overflow-hidden border-none shadow-2xl">
-                            <DialogHeader className="p-6 pb-2 bg-[#F8F9FC]">
-                                <DialogTitle className="text-xl md:text-2xl font-bold text-[#0D121B] tracking-tight">
-                                    Book Appointment
-                                </DialogTitle>
-                                <p className="text-[#64748B] text-sm">Fill in the patient visit details</p>
-                            </DialogHeader>
-
-                            <div className="p-6 space-y-5">
-                                <div className="space-y-1.5">
-                                    <label className="text-[13px] font-bold text-[#334155] flex items-center gap-2">
-                                        <User size={14} className="text-[#2B6CEE]" /> Patient Name
-                                    </label>
-                                    <input
-                                        className="w-full h-11 border border-[#E7EBF3] rounded-xl p-3 text-sm focus:outline-none focus:border-[#2B6CEE] transition-all bg-gray-50/30"
-                                        placeholder="e.g. Sarah Ali"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-[13px] font-bold text-[#334155] flex items-center gap-2">
-                                            <Clock size={14} className="text-[#2B6CEE]" /> Time Slot
-                                        </label>
-                                        <select className="w-full h-11 border border-[#E7EBF3] rounded-xl px-3 text-sm focus:outline-none focus:border-[#2B6CEE] bg-white cursor-pointer">
-                                            <option>09:00 AM</option>
-                                            <option>10:30 AM</option>
-                                            <option>01:00 PM</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                    <label className="text-[13px] font-bold text-[#334155] flex items-center gap-2">
-                                        <Activity size={14} className="text-[#2B6CEE]" /> Appointment Type
-                                    </label>
-                                    <select className="w-full h-11 border border-[#E7EBF3] rounded-xl px-3 text-sm focus:outline-none focus:border-[#2B6CEE] bg-white cursor-pointer">
-                                        <option>Routine Checkup</option>
-                                        <option>Consultation</option>
-                                        <option>Follow-up</option>
-                                    </select>
-                                </div>
-
-                                <div className="pt-2 flex flex-col md:flex-row gap-3">
-                                    <DialogTrigger asChild>
-                                        <button className="flex-1 h-11 rounded-xl border border-[#E7EBF3] text-[#64748B] font-bold text-sm hover:bg-gray-50 transition-all">
-                                            Cancel
-                                        </button>
-                                    </DialogTrigger>
-                                    <button className="flex-2 h-11 bg-[#2B6CEE] text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-500/20 hover:bg-[#1e56cc] transition-all">
-                                        Confirm Booking
-                                    </button>
-                                </div>
-                            </div>
-                        </DialogContent>
-                    </Dialog>
                 </div>
 
                 <div className="overflow-x-auto scrollbar-hide">
@@ -240,24 +176,24 @@ export default function MedicalAppointmentsTable() {
                             <span className="text-[#94A3B8] text-sm">No appointments found</span>
                         </div>
                     ) : (
-                        <Table className="w-full min-w-255">
+                        <Table className="w-full min-w-[700px]">
                             <TableHeader className="bg-[#F8F9FC]">
                                 <TableRow className="border-b-[#E7EBF3] hover:bg-transparent">
-                                    <TableHead className="px-6 py-4 text-[14px] font-semibold text-[#64748B]">Time</TableHead>
-                                    <TableHead className="px-6 py-4 text-[14px] font-semibold text-[#64748B]">Patient</TableHead>
-                                    <TableHead className="px-6 py-4 text-[14px] font-semibold text-[#64748B]">Specialty</TableHead>
-                                    <TableHead className="px-6 py-4 text-[14px] font-semibold text-[#64748B]">Doctor</TableHead>
-                                    <TableHead className="px-6 py-4 text-[14px] font-semibold text-[#64748B]">Status</TableHead>
-                                    <TableHead className="px-6 py-4 text-[14px] font-semibold text-[#64748B] text-right">Actions</TableHead>
+                                    {/* تقليل px-6 إلى px-4 */}
+                                    <TableHead className="px-4 py-4 text-[14px] font-semibold text-[#64748B]">Time</TableHead>
+                                    <TableHead className="px-4 py-4 text-[14px] font-semibold text-[#64748B]">Patient</TableHead>
+                                    <TableHead className="px-4 py-4 text-[14px] font-semibold text-[#64748B]">Specialty</TableHead>
+                                    <TableHead className="px-4 py-4 text-[14px] font-semibold text-[#64748B]">Status</TableHead>
+
+                                    <TableHead className="px-4 py-4 text-[14px] font-semibold text-[#64748B] text-right w-[100px]">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
 
                             <TableBody>
                                 {appointments.map((apt) => (
                                     <TableRow key={apt.id} className="border-b-[#E7EBF3] last:border-none hover:bg-slate-50/50">
-
                                         {/* Time */}
-                                        <TableCell className="px-6 py-4">
+                                        <TableCell className="px-4 py-4">
                                             <div className="flex flex-col whitespace-nowrap">
                                                 <span className="text-[14px] font-medium text-[#0F172A]">
                                                     {formatTime(apt.startTime)}
@@ -269,10 +205,10 @@ export default function MedicalAppointmentsTable() {
                                         </TableCell>
 
                                         {/* Patient */}
-                                        <TableCell className="px-6">
+                                        <TableCell className="px-4 py-4">
                                             <div className="flex items-center gap-3 whitespace-nowrap">
-                                                <Avatar className="h-10 w-10 shrink-0">
-                                                    <AvatarFallback className="bg-blue-100 text-blue-600 text-[13px] font-bold">
+                                                <Avatar className="h-9 w-9 shrink-0"> {/* تصغير الأفتار قليلاً */}
+                                                    <AvatarFallback className="bg-blue-100 text-blue-600 text-[12px] font-bold">
                                                         {apt.patient?.name?.substring(0, 2).toUpperCase() ?? "??"}
                                                     </AvatarFallback>
                                                 </Avatar>
@@ -283,39 +219,26 @@ export default function MedicalAppointmentsTable() {
                                         </TableCell>
 
                                         {/* Specialty */}
-                                        <TableCell className="px-6">
+                                        <TableCell className="px-4 py-4">
                                             <span className="text-[14px] font-normal text-[#475569] whitespace-nowrap">
                                                 {apt.doctor?.specialty}
                                             </span>
                                         </TableCell>
 
-                                        {/* Doctor */}
-                                        <TableCell className="px-6">
-                                            <div className="flex items-center gap-2 whitespace-nowrap">
-                                                <Avatar className="h-7 w-7">
-                                                    <AvatarFallback className="bg-green-100 text-green-600 text-[10px] font-bold">
-                                                        {apt.doctor?.name?.substring(0, 2).toUpperCase() ?? "Dr"}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                <span className="text-[14px] font-medium text-[#0F172A]">
-                                                    {apt.doctor?.name}
-                                                </span>
-                                            </div>
-                                        </TableCell>
-
                                         {/* Status */}
-                                        <TableCell className="px-6">
-                                            <span className={`px-3 py-1 rounded-xl text-[12px] font-bold border whitespace-nowrap ${statusStyles[apt.status] ?? "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                                        <TableCell className="px-4 py-4">
+                                            <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-medium border whitespace-nowrap ${statusStyles[apt.status] ?? "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                                                <span className="inline-block h-1.5 w-1.5 rounded-full bg-current mr-1.5 mb-0.5" />
                                                 {apt.status.replace("_", " ")}
                                             </span>
                                         </TableCell>
 
                                         {/* Actions */}
-                                        <TableCell className="px-6 text-right">
+                                        <TableCell className="px-4 py-4 text-right">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <button className="text-[#64748B] hover:text-[#0F172A] p-2 rounded-full hover:bg-slate-100 outline-none">
-                                                        <MoreVertical size={20} />
+                                                    <button className="text-[#64748B] hover:text-[#0F172A] p-1.5 rounded-full hover:bg-slate-100 outline-none transition-colors">
+                                                        <MoreVertical size={18} />
                                                     </button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-48">
@@ -327,7 +250,6 @@ export default function MedicalAppointmentsTable() {
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>
-
                                     </TableRow>
                                 ))}
                             </TableBody>

@@ -38,17 +38,23 @@ export const authOptions: AuthOptions = {
     ],
 
     callbacks: {
-        jwt: ({ token, user }) => {
+        jwt: ({ token, user, trigger, session }) => {
             if (user) {
-                token.user = user.user
-                token.token = user.token
+                token.user = user.user;
+                token.token = user.token;
             }
-            return token
+            if (trigger === "update" && session?.user) {
+                token.user = {
+                    ...token.user,
+                    ...session.user,
+                };
+            }
+            return token;
         },
         session: ({ session, token }) => {
-            session.user = token.user
-            session.token = token.token
-            return session
+            session.user = token.user;
+            session.token = token.token;
+            return session;
         }
     },
     pages: {

@@ -17,6 +17,8 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import Aboutpatients from "@/components/Aboutpatients/Aboutpatients";
 import Notes from "@/components/Notes/Notes";
+import ScansPreview from "@/components/ScansPreview/ScansPreview";
+
 interface PatientData {
     _id: string;
     displayName: string;
@@ -39,6 +41,7 @@ export default function PatientCard() {
     const [patient, setPatient] = useState<PatientData | null>(null);
     const [loading, setLoading] = useState(true);
 
+    const patientId = params?.id as string;
     useEffect(() => {
         if (!session) return;
 
@@ -144,37 +147,11 @@ export default function PatientCard() {
                     </div>
                     <div className="lg:col-span-4 flex flex-col gap-6">
                         <ActivePrescriptions />
-                        <Card className="w-full max-w-89.25 min-h-56 bg-white border-[#E7EBF3] shadow-sm rounded-xl overflow-hidden mt-6">
-                            <CardHeader className="flex flex-row items-center justify-between p-5 border-b border-[#E7EBF3] h-17.25">
-                                <h3 className="text-lg font-bold text-[#0D121B] leading-7">
-                                    Documents & Scans
-                                </h3>
-                                <Link href="/patient-documents" className="text-sm font-medium text-[#2B6CEE] hover:underline">
-                                    View All
-                                </Link>
-                            </CardHeader>
-                            <CardContent className="flex flex-row justify-center items-start p-5 gap-3 h-38.25">
-                                <div className="relative flex-1 h-28.25 bg-[#F3F4F6] border border-[#E7EBF3] rounded-lg overflow-hidden group cursor-pointer">
 
-                                    <div className="absolute inset-0 flex items-center justify-center bg-slate-200 opacity-80">
-                                        <ImageIcon className="text-slate-400" size={32} />
-                                    </div>
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-2">
-                                        <span className="text-[12px] font-medium text-white leading-4">Chest X-Ray</span>
-                                        <span className="text-[10px] text-[#D1D5DB] leading-3">Oct 10</span>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col items-center justify-center flex-1 h-28.25 bg-[#F3F4F6] border border-[#E7EBF3] rounded-lg p-2 group cursor-pointer hover:bg-[#EBEDF0] transition-colors">
-                                    <div className="w-7.5 h-9 flex items-center justify-center mb-1">
-                                        <FileText className="text-[#EF4444]" size={30} strokeWidth={1.5} />
-                                    </div>
-                                    <span className="text-[12px] font-medium text-[#0D121B] text-center leading-4">
-                                        Blood Report Oct 2023
-                                    </span>
-                                </div>
+                        {patientId && (
+                            <ScansPreview patientId={patientId} />
+                        )}
 
-                            </CardContent>
-                        </Card>
                         <Card className="relative w-full max-w-89.25 h-40 bg-linear-to-br from-[#2B6CEE] to-[#2563EB] shadow-blue-500/30 shadow-lg border-none rounded-xl overflow-hidden flex flex-col p-4">
                             <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 blur-2xl rounded-full pointer-events-none" />
                             <div className="relative z-10 flex flex-col gap-0.5 pt-0">
@@ -185,7 +162,7 @@ export default function PatientCard() {
                                     Follow-up Checkup
                                 </h3>
                                 <p className="text-[13px] font-medium text-blue-100/80">
-                                    With Dr. Smith
+                                    With Dr. Sara
                                 </p>
                             </div>
                             <div className="relative z-20 flex flex-row items-center gap-3 mt-auto mb-1">
@@ -195,7 +172,7 @@ export default function PatientCard() {
 
                                 <div className="flex flex-col justify-center">
                                     <span className="text-[14px] font-bold text-white leading-none mb-1">
-                                        Nov 15, 2023
+                                        Jun 15, 2026
                                     </span>
                                     <span className="text-[11px] font-medium text-blue-100">
                                         10:00 AM - 10:30 AM

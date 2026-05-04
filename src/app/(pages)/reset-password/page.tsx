@@ -4,7 +4,7 @@ import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -33,8 +33,8 @@ const resetPasswordSchema = z.object({
 
 export default function ResetPassword() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const token = searchParams.get("token")
+  const params = useParams()
+  const token = params.token 
 
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -55,39 +55,30 @@ export default function ResetPassword() {
     setServerError("")
 
     try {
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 10000)
-
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_URL_API}/users/reset-password`,
+        `${process.env.NEXT_PUBLIC_URL_API}/users/resetPassword/${token}`,
         {
-          method: "POST",
+          method: "PATCH", 
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ password: values.password }),
-          signal: controller.signal,
+          body: JSON.stringify({
+            password: values.password,
+            passwordConfirm: values.passwordConfirm
+          }),
         }
       )
-
-      clearTimeout(timeout)
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || "Something went wrong")
+        throw new Error(data.message || "Link expired or invalid.")
       }
 
       alert("Password updated successfully!")
-
       router.push("/login")
     } catch (error: any) {
-      if (error.name === "AbortError") {
-        setServerError("Request timeout. Try again.")
-      } else {
-        setServerError(error.message || "Connection error")
-      }
+      setServerError(error.message || "Connection error")
     } finally {
       setIsLoading(false)
     }

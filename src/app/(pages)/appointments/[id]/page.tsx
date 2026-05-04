@@ -17,6 +17,8 @@ import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import PrescriptionManager from "./prescription/page";
+import Patientinfo from "@/components/Patentinfo/patentinfo";
+import ScansPreview from "@/components/ScansPreview/ScansPreview";
 interface AppointmentData {
     _id: string;
     doctor: string;
@@ -34,13 +36,17 @@ interface AppointmentData {
     prescriptionCreated: boolean;
     price: number;
 }
-
+type Props = {
+    patientId: string;
+    limit: number;
+}
 export default function AppointmentDetails() {
     const params = useParams();
     const id = params?.id as string;
     const { data: session } = useSession();
     const [appointment, setAppointment] = useState<AppointmentData | null>(null);
     const [loading, setLoading] = useState(true);
+    const patientId = appointment?.patient._id as string;
 
     useEffect(() => {
         if (!session) return;
@@ -70,8 +76,6 @@ export default function AppointmentDetails() {
                 setLoading(false);
             }
         }
-        console.log(process.env.NEXT_PUBLIC_URL_API);
-        console.log(`${process.env.NEXT_PUBLIC_URL_API}/appointments/${id}`);
 
         getAppointment();
     }, [session, id]);
@@ -128,6 +132,9 @@ export default function AppointmentDetails() {
             <div className="w-full max-w-7xl mx-auto p-4 md:px-6 grow">
 
 
+                {patientId && (
+                    <Patientinfo patientId={patientId} />
+                )}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
                     <div className="lg:col-span-8 flex flex-col gap-6">
                         <Card className="bg-white border-[#E7EBF3] shadow-sm rounded-xl overflow-hidden">
@@ -173,44 +180,16 @@ export default function AppointmentDetails() {
                             </CardContent>
                         </Card>
 
-                        {/* Prescription Section */}
 
                         <PrescriptionManager />
                     </div>
                     <div className="lg:col-span-4 flex flex-col gap-6">
-                        <Card className="w-full bg-white border-[#E7EBF3] shadow-sm rounded-xl overflow-hidden">
-                            <CardHeader className="flex flex-row items-center justify-between p-5 border-b border-[#E7EBF3] h-17.25">
-                                <h3 className="text-lg font-bold text-[#0D121B]">Attachments (2)</h3>
-                                <Button variant="ghost" size="icon" className="w-7 h-7"><Plus className="text-[#2B6CEE]" size={20} /></Button>
-                            </CardHeader>
-                            <CardContent className="p-2 flex flex-col">
-
-                                <div className="flex flex-row items-center p-3 h-16 rounded-lg hover:bg-slate-50 transition-colors">
-                                    <div className="pr-3">
-                                        <div className="w-10 h-10 bg-[#FEF2F2] rounded-sm flex items-center justify-center">
-                                            <FileText className="text-[#EF4444]" size={20} />
-                                        </div>
-                                    </div>
-                                    <div className="flex-1">
-                                        <h4 className="text-sm font-semibold text-[#0D121B]">Blood_Test_Results.pdf</h4>
-                                        <p className="text-xs text-[#4C669A]">2.4 MB • Oct 22</p>
-                                    </div>
-                                </div>
-                                <div className="flex flex-row items-center p-3 h-16 rounded-lg hover:bg-slate-50 transition-colors">
-                                    <div className="pr-3">
-                                        <div className="w-10 h-10 bg-[#EFF6FF] rounded-sm flex items-center justify-center">
-                                            <FileImage className="text-[#3B82F6]" size={20} />
-                                        </div>
-                                    </div>
-                                    <div className="flex-1">
-                                        <h4 className="text-sm font-semibold text-[#0D121B]">MRI_Scan_v2.jpg</h4>
-                                        <p className="text-xs text-[#4C669A]">4.1 MB • Oct 20</p>
-                                    </div>
-
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <RecentHistory />
+                        {patientId && (
+                            <ScansPreview patientId={patientId} />
+                        )}
+                        {patientId && (
+                            <RecentHistory patientId={patientId} />
+                        )}
 
 
                     </div>

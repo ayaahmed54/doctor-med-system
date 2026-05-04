@@ -16,11 +16,12 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { loginSchema } from "@/schema/login.schema"
-import { ShieldCheck, Lock, Mail, Eye, HelpCircle, PlusSquare, Loader } from "lucide-react"
+import { ShieldCheck, Lock, Mail, Eye, HelpCircle, PlusSquare, Loader, EyeOff } from "lucide-react"
 import { signIn } from "next-auth/react"
 import { use, useState } from "react"
 export default function LoginForm() {
     const [isLoading, Setisloading] = useState<boolean>(false)
+    const [showPassword, setShowPassword] = useState(false);
     let searchParams = useSearchParams()
     const router = useRouter()
     const form = useForm({
@@ -98,13 +99,25 @@ export default function LoginForm() {
                                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#64748B]" />
                                     <FormControl>
                                         <Input
-                                            type="password"
+
+                                            type={showPassword ? "text" : "password"}
                                             placeholder="••••••••"
                                             className="h-12 bg-[#192233] border-[#324467] rounded-lg pl-11 pr-11 text-white placeholder:text-[#64748B] focus-visible:ring-1 focus-visible:ring-[#2B6CEE] transition-all"
                                             {...field}
                                         />
                                     </FormControl>
-                                    <Eye className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#64748B] cursor-pointer hover:text-white transition-colors" />
+
+                                    <button
+                                        type="button" 
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#64748B] cursor-pointer hover:text-white transition-colors"
+                                    >
+                                        {showPassword ? (
+                                            <EyeOff className="h-5 w-5" /> 
+                                        ) : (
+                                            <Eye className="h-5 w-5" /> 
+                                        )}
+                                    </button>
                                 </div>
                                 <FormMessage className="text-[12px] text-red-400" />
                             </FormItem>
