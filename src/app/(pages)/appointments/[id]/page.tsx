@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import PrescriptionManager from "./prescription/page";
 import Patientinfo from "@/components/Patentinfo/patentinfo";
 import ScansPreview from "@/components/ScansPreview/ScansPreview";
+import AppointmentActions from "@/components/AppointmentActions/AppointmentActions";
 interface AppointmentData {
     _id: string;
     doctor: string;
@@ -119,12 +120,7 @@ export default function AppointmentDetails() {
                     </div>
 
                     <div className="flex flex-row items-center gap-3 w-full md:w-auto">
-                        <Button variant="outline" className="flex-1 md:flex-none gap-2">
-                            <ClipboardEditIcon size={18} /> Reschedule
-                        </Button>
-                        <Button variant="destructive" className="flex-1 md:flex-none gap-2 bg-[#FEF2F2] text-[#DC2626] border-[#FEE2E2] hover:bg-[#FEE2E2]">
-                            <XCircleIcon size={18} /> Cancel
-                        </Button>
+                        <AppointmentActions appointmentId={appointment._id} />
                     </div>
                 </div>
             </header>
@@ -166,7 +162,8 @@ export default function AppointmentDetails() {
                                         <span className="text-[#94A3B8] font-semibold text-[12px] uppercase">Location</span>
                                         <div className="flex items-center gap-2">
                                             <MapPin size={18} className="text-[#94A3B8]" />
-                                            <span className="text-[#0F172A] font-medium">{appointment.location.clinicName}</span>
+                                            <span className="text-[#0F172A] font-medium">
+                                                Main Clinic</span>
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-1">
