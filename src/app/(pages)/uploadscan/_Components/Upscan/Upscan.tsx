@@ -51,7 +51,11 @@ export default function Upscan() {
 
             console.log("API:", data);
 
-            router.push(`/scanREsult?data=${encodeURIComponent(JSON.stringify(data))}`);
+            localStorage.setItem("scanResult", JSON.stringify(data));
+            router.push("/scanREsult");
+
+            // في ScanResult - اقرأ
+            const stored = localStorage.getItem("scanResult");
 
         } catch (err) {
             console.error(err);

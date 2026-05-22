@@ -1,31 +1,37 @@
 "use client";
 
 import { Button } from '@/components/ui/button'
-import {
-    ArrowLeft, Check, CheckCircle2
-} from 'lucide-react'
+import { ArrowLeft, Check, CheckCircle2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
-export default function ScanResult() { 
+export default function ScanResult() {
 
-    const searchParams = useSearchParams();
-    const dataParam = searchParams.get("data");
-
+    const router = useRouter();
+    const [scanData, setScanData] = useState<any>(null);
     const [formattedDate, setFormattedDate] = useState<string>("");
 
-    let scanData: any = null;
+    useEffect(() => {
+        const stored = localStorage.getItem("scanResult");
 
-    try {
-        if (dataParam) {
-            scanData = JSON.parse(decodeURIComponent(dataParam));
+        if (!stored) {
+
+            return;
         }
-    } catch (e) {
-        console.error("Error parsing data", e);
-    }
+
+        try {
+            const parsed = JSON.parse(stored);
+            setScanData(parsed);
+
+
+        } catch (e) {
+            console.error("Error parsing scan data", e);
+
+        }
+    }, []);
 
     const scan = scanData?.data?.scan;
 
@@ -39,6 +45,10 @@ export default function ScanResult() {
             setFormattedDate(date);
         }
     }, [scan?.createdAt]);
+
+    if (!scanData) return <p>Loading...</p>;
+
+
 
     return (
         <div className="min-h-screen bg-[#F6F6F8] p-6">
@@ -103,7 +113,7 @@ export default function ScanResult() {
                             width={500}
                             height={400}
                             className="object-contain rounded-2xl"
-                            priority 
+                            priority
                         />
                     </div>
 
