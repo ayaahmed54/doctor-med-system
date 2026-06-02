@@ -3,9 +3,13 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Activity, CheckCircle2, Calendar, Loader } from "lucide-react";
+import {
+    Activity,
+    CheckCircle2,
+    Calendar,
+    Loader
+} from "lucide-react";
 
-// Types
 interface DiseaseInfo {
     disease_name: string;
     description: string;
@@ -23,6 +27,7 @@ interface ScanData {
         disease_info: DiseaseInfo;
     };
     createdAt: string;
+    notes?: string;
 }
 
 export default function PatientScansPage() {
@@ -32,10 +37,13 @@ export default function PatientScansPage() {
     const [scans, setScans] = useState<ScanData[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const [notes, setNotes] = useState<Record<string, string>>({});
+    const [savingId, setSavingId] = useState<string | null>(null);
+
     useEffect(() => {
         async function getScans() {
-            const token = session?.token;
-            if (!token || !id) return;
+            const userToken = session?.token;
+            if (!userToken || !id) return;
 
             try {
                 setLoading(true);
@@ -44,7 +52,7 @@ export default function PatientScansPage() {
                     `${process.env.NEXT_PUBLIC_URL_API}/patients/${id}/scans`,
                     {
                         headers: {
-                            Authorization: `Bearer ${token}`,
+                            Authorization: `Bearer ${userToken}`,
                         },
                     }
                 );
@@ -52,10 +60,15 @@ export default function PatientScansPage() {
                 const result = await res.json();
 
                 if (result.status === "success") {
-                    setScans(result.data.scans || []);
+                    const scansData = result.data.scans || [];
+                    setScans(scansData);
+
+                    const init: Record<string, string> = {};
+                    scansData.forEach((s: any) => {
+                        init[s._id] = s.notes || "";
+                    });
+                    setNotes(init);
                 }
-            } catch (err) {
-                console.error("Error fetching scans:", err);
             } finally {
                 setLoading(false);
             }
@@ -64,69 +77,94 @@ export default function PatientScansPage() {
         getScans();
     }, [session, id]);
 
+    const saveNote = async (scanId: string) => {
+        const userToken = session?.token;
+        if (!userToken) return;
+
+        try {
+            setSavingId(scanId);
+
+            await fetch(
+                `${process.env.NEXT_PUBLIC_URL_API}/scans/${scanId}/notes`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${userToken}`,
+                    },
+                    body: JSON.stringify({
+                        notes: notes[scanId] ?? null,
+                    }),
+                }
+            );
+
+        } finally {
+            setSavingId(null);
+        }
+    };
+
     if (loading) {
-        return <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="flex flex-row gap-3">
-                <div className="w-6 h-6 rounded-full bg-blue-700 animate-bounce [animation-delay:.7s]"></div>
-                <div className="w-6 h-6 rounded-full bg-blue-700 animate-bounce [animation-delay:.3s]"></div>
-                <div className="w-6 h-6 rounded-full bg-blue-700 animate-bounce [animation-delay:.7s]"></div>
+        return (
+            <div className="fixed inset-0 flex items-center justify-center z-50">
+                <div className="flex flex-row gap-3">
+                    <div className="w-6 h-6 rounded-full bg-blue-700 animate-bounce [animation-delay:.7s]"></div>
+                    <div className="w-6 h-6 rounded-full bg-blue-700 animate-bounce [animation-delay:.3s]"></div>
+                    <div className="w-6 h-6 rounded-full bg-blue-700 animate-bounce [animation-delay:.7s]"></div>
+                </div>
             </div>
-        </div>;
+        );
     }
 
-    if (scans.length === 0) {
+    if (!scans.length) {
         return (
-            <div className="flex items-center justify-center min-h-screen p-20 text-gray-400 font-bold text-center">
-                No scans available currently.
+            <div className="h-screen flex items-center justify-center text-gray-400">
+                No scans available
             </div>
-
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8" dir="ltr">
-            {scans.map((scan) => (
-                <div className="max-w-6xl mx-auto">
+        <div className="min-h-screen bg-[#F6F8FC] p-6 md:p-10">
 
-                    <div className="mb-6 flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold text-[#0D121B]">Smart Scan Report</h1>
-                            <p className="text-[#4C669A] text-sm flex items-center gap-2 mt-1">
-                                <Calendar className="w-4 h-4" />
-                                Scan Date: {new Date(scan.createdAt).toLocaleDateString('en-US')}
-                            </p>
+            <div className="max-w-6xl mx-auto space-y-10">
+
+                {scans.map((scan) => (
+                    <div
+                        key={scan._id}
+                        className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+                    >
+
+                        {/* HEADER */}
+                        <div className="flex flex-col md:flex-row md:items-center justify-between p-5 border-b gap-3">
+
+                            <div>
+                                <h1 className="text-lg font-bold text-gray-900">
+                                    Smart Scan Report
+                                </h1>
+
+                                <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                                    <Calendar className="w-4 h-4" />
+                                    {new Date(scan.createdAt).toLocaleDateString()}
+                                </div>
+                            </div>
+
+                            <span className="self-start md:self-auto px-3 py-1 text-xs rounded-full bg-blue-50 text-blue-600 font-semibold">
+                                {scan.scanType}
+                            </span>
                         </div>
-                        <span className="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-sm font-bold border border-blue-100 shadow-sm">
-                            {scan.scanType}
-                        </span>
-                    </div>
 
-                    <div className="max-w-[1600px] mx-auto p-6 bg-[#F8F9FC] min-h-screen font-sans">
+                        {/* BODY */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-5">
 
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-
-                            <div className="lg:col-span-8 flex flex-col gap-4">
-                                <div className="relative bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800">
-
-                                    <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent z-10">
-                                        <div className="flex gap-4 text-white/80 text-xs">
-                                            <span>Slice: 14/32</span>
-                                            <span>Thickness: 2.0mm</span>
-                                        </div>
-
-                                    </div>
-
+                            {/* IMAGE */}
+                            <div className="lg:col-span-7">
+                                <div className="rounded-xl overflow-hidden bg-black">
                                     <img
                                         src={scan.imageUrl}
-                                        alt="Medical Scan"
-                                        className="w-full aspect-[4/3] object-contain"
+                                        className="w-full object-contain aspect-[4/3]"
                                     />
-
-                                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
-                                        <p className="text-white/60 text-[10px] text-right">Zoom: 1.2x • R: 128 G: 128 B: 128</p>
-                                    </div>
                                 </div>
-                                <div className="flex gap-3 overflow-x-auto pb-2">
+                                <div className="flex gap-3 mt-6 overflow-x-auto pb-2">
                                     {[1, 2, 3, 4].map((i) => (
                                         <div key={i} className={`w-20 h-20 rounded-lg border-2 shrink-0 overflow-hidden ${i === 1 ? 'border-blue-500' : 'border-transparent opacity-50'}`}>
                                             <img src={scan.imageUrl} className="w-full h-full object-cover bg-black" />
@@ -135,60 +173,94 @@ export default function PatientScansPage() {
                                 </div>
                             </div>
 
-                            <div className="lg:col-span-4 flex flex-col gap-6">
-                                <div className="bg-white rounded-xl border border-[#E7EBF3] shadow-sm overflow-hidden">
-                                    <div className="p-4 bg-gray-50 border-b border-[#E7EBF3] flex justify-between items-center">
-                                        <div className="flex items-center gap-2 font-bold text-gray-700 text-sm">
-                                            <Activity className="w-4 h-4 text-blue-500" />
-                                            AI Analysis
-                                        </div>
-                                        <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold uppercase">Complete</span>
+                            {/* AI + NOTES */}
+                            <div className="lg:col-span-5 space-y-5">
+
+                                {/* AI CARD */}
+                                <div className="bg-gray-50 rounded-xl p-4 border">
+
+                                    <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
+                                        <Activity className="w-4 h-4 text-blue-600" />
+                                        AI Analysis
                                     </div>
 
-                                    <div className="p-5">
-                                        <div className="mb-6">
-                                            <div className="flex justify-between items-end mb-1">
-                                                <p className="text-xs font-bold text-gray-500 uppercase tracking-tighter">Predicted Diagnosis</p>
-                                                <span className="text-blue-600 font-black text-xl">{scan.aiResult.confidence}%</span>
-                                            </div>
-                                            <h2 className="text-xl font-black text-[#0D121B] leading-tight mb-2">
-                                                {scan.aiResult.disease_info.disease_name}
-                                            </h2>
-                                            <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                                                <div className="bg-blue-600 h-full transition-all duration-1000" style={{ width: `${scan.aiResult.confidence}%` }}></div>
-                                            </div>
+                                    <h2 className="text-lg font-bold text-gray-900">
+                                        {scan.aiResult.disease_info.disease_name}
+                                    </h2>
+
+                                    <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+                                        {scan.aiResult.disease_info.description}
+                                    </p>
+
+                                    <div className="mt-4">
+                                        <div className="flex justify-between text-xs text-gray-500 mb-1">
+                                            <span>Confidence</span>
+                                            <span className="font-bold text-blue-600">
+                                                {scan.aiResult.confidence}%
+                                            </span>
                                         </div>
 
-                                        <div className="space-y-4">
-                                            <div>
-                                                <p className="text-[11px] font-bold text-gray-400 uppercase mb-2">Condition Description</p>
-                                                <p className="text-sm text-gray-600 leading-relaxed italic">
-                                                    "{scan.aiResult.disease_info.description}"
-                                                </p>
-                                            </div>
-
-                                            <div>
-                                                <p className="text-[11px] font-bold text-gray-400 uppercase mb-2">Recommendations</p>
-                                                <ul className="space-y-2">
-                                                    {scan.aiResult.disease_info.recommendations.map((rec, i) => (
-                                                        <li key={i} className="flex items-start gap-2 text-xs text-gray-700 bg-gray-50 p-2 rounded border border-gray-100">
-                                                            <CheckCircle2 className="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
-                                                            {rec}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
+                                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-blue-600"
+                                                style={{ width: `${scan.aiResult.confidence}%` }}
+                                            />
                                         </div>
                                     </div>
+
+                                    <ul className="mt-4 space-y-2">
+                                        {scan.aiResult.disease_info.recommendations.map((r, i) => (
+                                            <li
+                                                key={i}
+                                                className="flex gap-2 text-xs text-gray-700"
+                                            >
+                                                <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                                                {r}
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
 
+                                <div className="bg-white border rounded-xl p-4">
 
+                                    <p className="text-xs font-bold text-gray-500 mb-2">
+                                        DOCTOR NOTES
+                                    </p>
+
+                                    <textarea
+                                        className="w-full min-h-[110px] p-3 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"
+                                        placeholder="Write notes..."
+                                        value={notes[scan._id] || ""}
+                                        onChange={(e) =>
+                                            setNotes((prev) => ({
+                                                ...prev,
+                                                [scan._id]: e.target.value,
+                                            }))
+                                        }
+                                    />
+
+                                    <button
+                                        onClick={() => saveNote(scan._id)}
+                                        disabled={savingId === scan._id}
+                                        className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg transition disabled:opacity-50"
+                                    >
+                                        {savingId === scan._id ? (
+                                            <span className="flex items-center justify-center gap-2">
+                                                <Loader className="w-4 h-4 animate-spin" />
+                                                Saving...
+                                            </span>
+                                        ) : (
+                                            "Save Notes"
+                                        )}
+                                    </button>
+                                </div>
 
                             </div>
                         </div>
                     </div>
+                ))}
 
-                </div>))}
+            </div>
         </div>
     );
 }
